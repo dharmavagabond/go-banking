@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  start:
+    cmds:
+      -
+        cmd: podman run -d --restart=always --name postgres-db --env-file=.env --publish=5432:5432 postgres:15-alpine
+        silent: true
+
+  stop:
+    cmds:
+      -
+        cmd: podman stop postgres-db
+        silent: true
+
+  create:
+      cmds:
+        - cmd: podman exec -it postgres-db createdb --username=dharma --owner=dharma simple-bank
+
+  drop:
+    cmds:
+      - cmd: podman exec -it postgres-db dropdb --username=dharma simple-bank

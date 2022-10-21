@@ -1,0 +1,10 @@
+version: '3'
+
+tasks:
+  up:
+    cmds:
+      - migrate -path db/migration -database $POSTGRES_DSN -verbose up
+
+  down:
+    cmds:
+      - migrate -path db/migration -database $POSTGRES_DSN -verbose down
