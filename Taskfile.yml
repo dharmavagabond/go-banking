@@ -3,6 +3,6 @@ version: '3'
 dotenv: [ '.env' ]
 
 includes:
-  db: ./tasks/database/PostgresTasks.yml
-  migrate: ./tasks/database/MigrationsTasks.yml
-  sqlc: ./tasks/database/SqlcTasks.yml
+    db: ./tasks/database/PostgresTasks.yml
+    migrate: ./tasks/database/MigrationsTasks.yml
+    sqlc: ./tasks/database/SqlcTasks.yml
