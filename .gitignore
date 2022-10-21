@@ -1,0 +1,5 @@
+.env
+
+db/sqlc/*
+
+!db/sqlc/.keep
