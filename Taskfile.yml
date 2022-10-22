@@ -6,3 +6,8 @@ includes:
     db: ./tasks/database/PostgresTasks.yml
     migrate: ./tasks/database/MigrationsTasks.yml
     sqlc: ./tasks/database/SqlcTasks.yml
+
+tasks:
+    test:
+        cmds:
+            - cmd: go test -v -cover ./...
