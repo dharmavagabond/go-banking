@@ -14,7 +14,7 @@ import (
 func createRandomAccount(arg *CreateAccountParams) (Account, error) {
 	if arg == nil {
 		arg = &CreateAccountParams{
-			Owner:    randomdata.SillyName(),
+			Owner:    randomdata.FullName(randomdata.RandomGender),
 			Balance:  util.RandomMoney(),
 			Currency: randomdata.Currency(),
 		}
@@ -25,9 +25,9 @@ func createRandomAccount(arg *CreateAccountParams) (Account, error) {
 
 func TestCreateAccount(t *testing.T) {
 	arg := &CreateAccountParams{
-		Owner:    util.RandomOwner(),
+		Owner:    randomdata.FullName(randomdata.RandomGender),
 		Balance:  util.RandomMoney(),
-		Currency: util.RandomCurrency(),
+		Currency: randomdata.Currency(),
 	}
 	account, err := createRandomAccount(arg)
 	require.NoError(t, err)
