@@ -1,5 +1,7 @@
 .env
 
+vendor
 db/sqlc/*
 
 !db/sqlc/.keep
+!db/sqlc/*_test.go
