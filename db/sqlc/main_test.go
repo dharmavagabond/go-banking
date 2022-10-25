@@ -9,14 +9,16 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-var testQueries *Queries
+var (
+	dbpool      *pgxpool.Pool
+	testQueries *Queries
+)
 
 func TestMain(m *testing.M) {
 	var (
-		dbpool *pgxpool.Pool
-		dbDsn  string
-		err    error
-		isOk   bool
+		dbDsn string
+		err   error
+		isOk  bool
 	)
 
 	if dbDsn, isOk = os.LookupEnv("POSTGRES_DSN"); !isOk {
