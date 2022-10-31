@@ -4,7 +4,7 @@ tasks:
     run:
         cmds:
             -
-                cmd: podman run -d --restart=always --name postgres-db --env-file=.env --publish=5432:5432 postgres:15-alpine
+                cmd: podman run -d --restart=always --name postgres-db --env-file=.env --publish=5432:5432 docker.io/postgres:15-alpine
                 silent: true
 
     start:
