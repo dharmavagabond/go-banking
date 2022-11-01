@@ -14,9 +14,11 @@ func TestTransferTx(t *testing.T) {
 	toAccount, _ := createRandomAccount(nil)
 	errorsch := make(chan error)
 	resultsch := make(chan TransferTxResult)
+	executedTransactions := 5
 	amountToTransfer := int64(10)
+	existed := make(map[int]bool)
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < executedTransactions; i++ {
 		go func() {
 			result, err := store.TransferTx(
 				ctx,
@@ -74,6 +76,32 @@ func TestTransferTx(t *testing.T) {
 		_, err = store.GetEntry(ctx, toEntry.ID)
 		require.NoError(t, err)
 
-		// TODO: check if balance is updated
+		uFromAccount := result.FromAccount
+		require.NotEmpty(t, uFromAccount)
+		require.Equal(t, fromAccount.ID, uFromAccount.ID)
+
+		uToAccount := result.ToAccount
+		require.NotEmpty(t, uToAccount)
+		require.Equal(t, toAccount.ID, uToAccount.ID)
+
+		diff1 := fromAccount.Balance - uFromAccount.Balance
+		diff2 := uToAccount.Balance - toAccount.Balance
+		require.Equal(t, diff1, diff2)
+		require.True(t, diff1 > 0)
+		require.True(t, diff1%amountToTransfer == 0)
+
+		k := int(diff1 / amountToTransfer)
+		require.True(t, k >= 1 && k <= executedTransactions)
+		require.NotContains(t, existed, k)
+		existed[k] = true
 	}
+
+	updatedFromAccount, err := testQueries.GetAccount(context.Background(), fromAccount.ID)
+	require.NoError(t, err)
+
+	updatedToAccount, err := testQueries.GetAccount(context.Background(), toAccount.ID)
+	require.NoError(t, err)
+
+	require.Equal(t, fromAccount.Balance-int64(executedTransactions)*amountToTransfer, updatedFromAccount.Balance)
+	require.Equal(t, toAccount.Balance+int64(executedTransactions)*amountToTransfer, updatedToAccount.Balance)
 }
