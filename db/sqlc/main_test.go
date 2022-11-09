@@ -21,8 +21,8 @@ func TestMain(m *testing.M) {
 		isOk  bool
 	)
 
-	if dbDsn, isOk = os.LookupEnv("POSTGRES_DSN"); !isOk {
-		log.Fatal("[Err]: `POSTGRES_DSN` no está ajustada.")
+	if dbDsn, isOk = os.LookupEnv("POSTGRES_GOAPP_DSN"); !isOk {
+		log.Fatal("[Err]: `POSTGRES_GOAPP_DSN` no está ajustada.")
 	}
 
 	if dbpool, err = pgxpool.Connect(context.Background(), dbDsn); err != nil {

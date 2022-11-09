@@ -26,3 +26,11 @@ tasks:
     drop:
         cmds:
             - cmd: podman exec -it postgres-db dropdb --username=dharma simple-bank
+
+    psql:
+        cmds:
+            - cmd: podman exec -it postgres-db psql --username=dharma simple-bank
+
+    sh:
+        cmds:
+            - cmd: podman exec -it postgres-db sh
