@@ -56,10 +56,8 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	return tx.Commit(ctx)
 }
 
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
-	var result TransferTxResult
-	txError := store.execTx(ctx, func(q *Queries) error {
-		var err error
+func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (result TransferTxResult, txError error) {
+	txError = store.execTx(ctx, func(q *Queries) (err error) {
 		if result.Transfer, err = q.CreateTransfer(
 			ctx,
 			CreateTransferParams{
