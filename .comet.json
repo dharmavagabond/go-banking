@@ -1,0 +1,16 @@
+{
+  "signOffCommits": true,
+  "prefixes": [
+    { "title":  "feat", "description":  "A new feature."},
+    { "title":  "fix", "description":  "A bug fix."},
+    { "title":  "refactor", "description":  "A code change that neither fixes a bug nor adds a feature."},
+    { "title":  "build", "description":  "Changes that affect the build system or external dependencies."},
+		{ "title": "chore", "description": "Updates that do not apply to the build type, such as dependency updates." },
+    { "title":  "perf", "description":  "A code change that improves performance."},
+		{ "title": "test", "description": "Adding missing tests or correcting existing ones." },
+		{ "title": "style", "description": "Formatting changes, missing semicolons, etc." },
+		{ "title": "docs", "description": "Documentation only changes." },
+		{ "title": "ci", "description": "Changes to our CI configuration files and scripts." },
+		{ "title": "revert", "description": "Reverts a previous change." }
+  ]
+}
