@@ -10,7 +10,6 @@
 		{ "title": "test", "description": "Adding missing tests or correcting existing ones." },
 		{ "title": "style", "description": "Formatting changes, missing semicolons, etc." },
 		{ "title": "docs", "description": "Documentation only changes." },
-		{ "title": "ci", "description": "Changes to our CI configuration files and scripts." },
-		{ "title": "revert", "description": "Reverts a previous change." }
+		{ "title": "ci", "description": "Changes to our CI configuration files and scripts." }
   ]
 }
