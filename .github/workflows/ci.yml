@@ -16,9 +16,11 @@ jobs:
                     go-version: '1.19.x'
                     cache: true
 
+            -   name: Install SQLC
+                run: go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+
             -   name: Install Task
                 uses: arduino/setup-task@v1
-
 
             -   name: SQLC Generate
                 run: task sqlc:generate
