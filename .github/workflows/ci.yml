@@ -1,0 +1,23 @@
+name: simple-bank-ci
+
+on:
+    pull_request:
+        branches: [ 'main' ]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+
+            -   name: Setup Go
+                uses: actions/setup-got@v3
+                with:
+                    go-version: '1.19.x'
+                    cache: true
+
+            -   name: Install Task
+                uses: arduino/setup-task@v1
+
+            -   name: Test
+                run: task test
