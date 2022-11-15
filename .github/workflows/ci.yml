@@ -18,6 +18,8 @@ jobs:
                   --health-interval 10s
                   --health-timeout 5s
                   --health-retries 5
+                ports:
+                    - 5432:5432
         steps:
             -   uses: actions/checkout@v3
 
@@ -29,19 +31,36 @@ jobs:
 
             -   name: Install SQLC
                 run: go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+                with:
+                    cache: true
+
+            -   name: Install migrate
+                run: |
+                    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
+                    sudo mv migrate.linux-amd64 /usr/bin/migrate
+                with:
+                    cache: true
 
             -   name: Install Task
                 uses: arduino/setup-task@v1
+                with:
+                    cache: true
 
             -   name: SQLC Generate
                 run: task sqlc:generate
+                with:
+                    cache: true
 
             -   name: Run migrations
                 run: migrate:up
                 env:
                     POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
+                with:
+                    cache: true
 
             -   name: Test
                 run: task test
                 env:
                     POSTGRES_GOAPP_DSN: ${{ secrets.POSTGRES_GOAPP_DSN }}
+                with:
+                    cache: true
