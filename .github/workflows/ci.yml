@@ -1,0 +1,54 @@
+name: simple-bank-ci
+
+on:
+    pull_request:
+        branches: [ 'main' ]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        services:
+              postgres:
+                image: postgres:15-alpine
+                env:
+                    POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                    POSTGRES_DB: simple-bank
+                options: >-
+                  --health-cmd pg_isready
+                  --health-interval 10s
+                  --health-timeout 5s
+                  --health-retries 5
+                ports:
+                    - 5432:5432
+        steps:
+            -   uses: actions/checkout@v3
+
+            -   name: Setup Go
+                uses: actions/setup-go@v3
+                with:
+                    go-version: '1.19.x'
+                    cache: true
+
+            -   name: Install SQLC
+                run: go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+
+            -   name: Install migrate
+                run: |
+                    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
+                    sudo mv migrate /usr/bin
+
+            -   name: Install Task
+                uses: arduino/setup-task@v1
+
+            -   name: SQLC Generate
+                run: task sqlc:generate
+
+            -   name: Run migrations
+                run: task migrate:up
+                env:
+                    POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
+
+            -   name: Test
+                run: task test
+                env:
+                    POSTGRES_GOAPP_DSN: ${{ secrets.POSTGRES_GOAPP_DSN }}
