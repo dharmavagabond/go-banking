@@ -36,7 +36,6 @@ jobs:
                 run: |
                     curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
                     sudo mv migrate /usr/bin
-                    which migrate
 
             -   name: Install Task
                 uses: arduino/setup-task@v1
@@ -45,7 +44,7 @@ jobs:
                 run: task sqlc:generate
 
             -   name: Run migrations
-                run: migrate:up
+                run: task migrate:up
                 env:
                     POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
 
