@@ -5,8 +5,19 @@ on:
         branches: [ 'main' ]
 
 jobs:
-    build:
+    test:
         runs-on: ubuntu-latest
+        services:
+              postgres:
+                image: postgres:15-alpine
+                env:
+                    POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                    POSTGRES_DB: simple-bank
+                options: >-
+                  --health-cmd pg_isready
+                  --health-interval 10s
+                  --health-timeout 5s
+                  --health-retries 5
         steps:
             -   uses: actions/checkout@v3
 
@@ -25,5 +36,12 @@ jobs:
             -   name: SQLC Generate
                 run: task sqlc:generate
 
+            -   name: Run migrations
+                run: migrate:up
+                env:
+                    POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
+
             -   name: Test
                 run: task test
+                env:
+                    POSTGRES_GOAPP_DSN: ${{ secrets.POSTGRES_GOAPP_DSN }}
