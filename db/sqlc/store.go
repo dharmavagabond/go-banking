@@ -14,12 +14,6 @@ type Store struct {
 	db *pgxpool.Pool
 }
 
-type TransferTxParams struct {
-	FromAccountID int64 `json:"from_account_id"`
-	ToAccountID   int64 `json:"to_account_id"`
-	Amount        int64 `json:"amount"`
-}
-
 type TransferTxResult struct {
 	Transfer    Transfer `json:"transfer"`
 	FromAccount Account  `json:"from_account"`
@@ -56,7 +50,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	return tx.Commit(ctx)
 }
 
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (result TransferTxResult, txError error) {
+func (store *Store) TransferTx(ctx context.Context, arg CreateTransferParams) (result TransferTxResult, txError error) {
 	txError = store.execTx(ctx, func(q *Queries) (err error) {
 		if result.Transfer, err = q.CreateTransfer(
 			ctx,
