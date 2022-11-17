@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+    dev:
+        cmds:
+            - cmd: go run main.go
+    test:
+        cmds:
+            - cmd: go test -v -cover ./...
