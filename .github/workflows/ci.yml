@@ -49,6 +49,6 @@ jobs:
                     POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
 
             -   name: Test
-                run: task test
+                run: task app:test
                 env:
                     POSTGRES_GOAPP_DSN: ${{ secrets.POSTGRES_GOAPP_DSN }}
