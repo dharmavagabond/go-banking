@@ -3,7 +3,7 @@ version: '3'
 tasks:
     dev:
         cmds:
-            - cmd: go run main.go
+            - cmd: gowatch
     test:
         cmds:
             - cmd: go test -v -cover ./...
