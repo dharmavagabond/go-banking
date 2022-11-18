@@ -3,8 +3,8 @@ version: '3'
 tasks:
     up:
         cmds:
-            - migrate -path db/migration -database $POSTGRES_DSN -verbose up
+            - migrate -path internal/db/migration -database $POSTGRES_DSN -verbose up
 
     down:
         cmds:
-            - migrate -path db/migration -database $POSTGRES_DSN -verbose down
+            - migrate -path internal/db/migration -database $POSTGRES_DSN -verbose down
