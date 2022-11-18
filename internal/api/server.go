@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/MadAppGang/httplog"
-	"github.com/dharmavagabond/simple-bank/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/config"
+	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -35,9 +36,9 @@ func (server *Server) Start(address string) error {
 func NewServer(store *db.Store) *Server {
 	server := &Server{store: store}
 	router := echo.New()
-	router.Debug = true
-	server.router = router
+	router.Debug = config.App.IsDev
 	router.Validator = &customValidator{validator: validator.New()}
+	server.router = router
 
 	router.Use(loggerMiddleware)
 	router.POST("/accounts", server.createAccount)

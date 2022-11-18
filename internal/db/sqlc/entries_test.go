@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dharmavagabond/simple-bank/util"
+	"github.com/dharmavagabond/simple-bank/internal/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,7 +47,7 @@ func TestListEntries(t *testing.T) {
 	account, _ := createRandomAccount(nil)
 
 	for i := 0; i < 10; i++ {
-		testQueries.CreateEntry(
+		_, _ = testQueries.CreateEntry(
 			context.Background(),
 			CreateEntryParams{
 				AccountID: sql.NullInt64{Int64: account.ID, Valid: true},

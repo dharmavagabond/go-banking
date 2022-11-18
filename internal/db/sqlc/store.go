@@ -4,15 +4,23 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 
+	"github.com/dharmavagabond/simple-bank/internal/config"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/labstack/echo/v4"
 )
 
 type Store struct {
 	*Queries
 	db *pgxpool.Pool
 }
+
+var (
+	once  sync.Once
+	store *Store
+)
 
 type TransferTxResult struct {
 	Transfer    Transfer `json:"transfer"`
@@ -22,11 +30,37 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-func NewStore(db *pgxpool.Pool) *Store {
-	return &Store{
-		db:      db,
-		Queries: New(db),
-	}
+func NewStore() *Store {
+	once.Do(func() {
+		var (
+			dbconfig *pgxpool.Config
+			dbpool   *pgxpool.Pool
+			err      error
+		)
+
+		logger := echo.New().Logger
+
+		if dbconfig, err = pgxpool.ParseConfig(config.DB.DSN); err != nil {
+			logger.Fatal("[Err]: ", err)
+		}
+
+		dbconfig.LazyConnect = true
+
+		if dbpool, err = pgxpool.ConnectConfig(context.Background(), dbconfig); err != nil {
+			logger.Fatal("[Err]: ", err)
+		}
+
+		if err = dbpool.Ping(context.Background()); err != nil {
+			logger.Fatal("[Err]: ", err)
+		}
+
+		store = &Store{
+			db:      dbpool,
+			Queries: New(dbpool),
+		}
+	})
+
+	return store
 }
 
 func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {

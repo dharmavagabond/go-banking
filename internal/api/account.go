@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/dharmavagabond/simple-bank/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )

@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dharmavagabond/simple-bank/util"
-	"github.com/jackc/pgx/v4"
 	"github.com/Pallinder/go-randomdata"
+	"github.com/dharmavagabond/simple-bank/internal/util"
+	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -86,7 +86,7 @@ func TestDeleteAccount(t *testing.T) {
 
 func TestListAccount(t *testing.T) {
 	for i := 0; i < 10; i++ {
-		createRandomAccount(nil)
+		_, _ = createRandomAccount(nil)
 	}
 
 	arg := ListAccountsParams{
