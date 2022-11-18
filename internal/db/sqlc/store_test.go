@@ -8,7 +8,7 @@ import (
 )
 
 func TestTransferTx(t *testing.T) {
-	store := NewStore(dbpool)
+	store := NewStore()
 	ctx := context.Background()
 	fromAccount, _ := createRandomAccount(nil)
 	toAccount, _ := createRandomAccount(nil)
@@ -107,7 +107,7 @@ func TestTransferTx(t *testing.T) {
 }
 
 func TestTransferDeadlockTx(t *testing.T) {
-	store := NewStore(dbpool)
+	store := NewStore()
 	ctx := context.Background()
 	fromAccount, _ := createRandomAccount(nil)
 	toAccount, _ := createRandomAccount(nil)

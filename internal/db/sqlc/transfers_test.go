@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dharmavagabond/simple-bank/util"
+	"github.com/dharmavagabond/simple-bank/internal/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,7 +58,7 @@ func TestListTransfer(t *testing.T) {
 	toAccount, _ := createRandomAccount(nil)
 
 	for i := 0; i < 10; i++ {
-		createRandomTransfer(fromAccount.ID, toAccount.ID, nil)
+		_, _ = createRandomTransfer(fromAccount.ID, toAccount.ID, nil)
 	}
 
 	arg := ListTransfersParams{
