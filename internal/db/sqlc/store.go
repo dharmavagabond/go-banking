@@ -12,14 +12,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(context.Context, CreateTransferParams) (TransferTxResult, error)
+}
+
+type SQLStore struct {
 	*Queries
 	db *pgxpool.Pool
 }
 
 var (
 	once  sync.Once
-	store *Store
+	store Store
 )
 
 type TransferTxResult struct {
@@ -30,7 +35,7 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-func NewStore() *Store {
+func NewStore() Store {
 	once.Do(func() {
 		var (
 			dbconfig *pgxpool.Config
@@ -54,7 +59,7 @@ func NewStore() *Store {
 			logger.Fatal("[Err]: ", err)
 		}
 
-		store = &Store{
+		store = &SQLStore{
 			db:      dbpool,
 			Queries: New(dbpool),
 		}
@@ -63,7 +68,7 @@ func NewStore() *Store {
 	return store
 }
 
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	var (
 		err error
 		tx  pgx.Tx
@@ -84,7 +89,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	return tx.Commit(ctx)
 }
 
-func (store *Store) TransferTx(ctx context.Context, arg CreateTransferParams) (result TransferTxResult, txError error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg CreateTransferParams) (result TransferTxResult, txError error) {
 	txError = store.execTx(ctx, func(q *Queries) (err error) {
 		if result.Transfer, err = q.CreateTransfer(
 			ctx,

@@ -3,8 +3,9 @@ cover.out
 
 vendor
 
-db/sqlc/db.go
-db/sqlc/models.go
-db/sqlc/*.sql.go
+internal/db/sqlc/db.go
+internal/db/sqlc/models.go
+internal/db/sqlc/querier.go
+internal/db/sqlc/*.sql.go
 
-!db/sqlc/.keep
+!internal/db/sqlc/.keep
