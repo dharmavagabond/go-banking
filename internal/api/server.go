@@ -12,7 +12,7 @@ import (
 
 type (
 	Server struct {
-		store  *db.Store
+		store  db.Store
 		router *echo.Echo
 	}
 
@@ -33,7 +33,7 @@ func (server *Server) Start(address string) error {
 	return server.router.Start(address)
 }
 
-func NewServer(store *db.Store) *Server {
+func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := echo.New()
 	router.Debug = config.App.IsDev
