@@ -11,7 +11,7 @@ import (
 type (
 	createAccountRequest struct {
 		Owner    string `json:"owner" validate:"required"`
-		Currency string `json:"currency" validate:"required,oneof=USD EUR"`
+		Currency string `json:"currency" validate:"required,currency"`
 	}
 
 	getAccountRequest struct {
