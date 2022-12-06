@@ -36,14 +36,20 @@ func (server *Server) Start(address string) error {
 func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := echo.New()
+	sbvalidator := validator.New()
 	router.Debug = config.App.IsDev
-	router.Validator = &customValidator{validator: validator.New()}
+	router.Validator = &customValidator{validator: sbvalidator}
 	server.router = router
 
+	if err := sbvalidator.RegisterValidation("currency", validCurrency); err != nil {
+		router.Logger.Fatal(err)
+	}
+
 	router.Use(loggerMiddleware)
-	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.listAccounts)
+	router.POST("/accounts", server.createAccount)
+	router.POST("/transfers", server.createTransfer)
 
 	return server
 }
