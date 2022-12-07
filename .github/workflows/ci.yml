@@ -37,11 +37,19 @@ jobs:
                     curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
                     sudo mv migrate /usr/bin
 
+            -   name: Install mockery
+                run: |
+                    curl -L https://github.com/vektra/mockery/releases/download/v2.15.0/mockery_2.15.0_Linux_x86_64.tar.gz | tar xvz
+                    sudo mv mockery /usr/bin
+
             -   name: Install Task
                 uses: arduino/setup-task@v1
 
             -   name: SQLC Generate
                 run: task sqlc:generate
+
+            -   name: Mock DB
+                run: task db:mock
 
             -   name: Run migrations
                 run: task migrate:up

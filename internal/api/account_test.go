@@ -13,9 +13,9 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/db/mock"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/util"
-	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,16 +33,16 @@ func TestGetAccountAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		accountID     int64
-		buildStubs    func(store *mockdb.MockStore)
+		buildStubs    func(store *mocks.Store)
 		checkResponse func(t *testing.T, rec *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountID: account.ID,
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					GetAccount(mock.Anything, mock.IsType(account.ID)).
 					Times(1).
 					Return(account, nil)
 			},
@@ -54,10 +54,10 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountID: account.ID,
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					GetAccount(mock.Anything, mock.IsType(account.ID)).
 					Times(1).
 					Return(db.Account{}, pgx.ErrNoRows)
 			},
@@ -68,10 +68,10 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "InternalError",
 			accountID: account.ID,
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					GetAccount(mock.Anything, mock.IsType(account.ID)).
 					Times(1).
 					Return(db.Account{}, &pgconn.PgError{})
 			},
@@ -82,11 +82,11 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "BadRequest",
 			accountID: 0,
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(gomock.Any(), gomock.Any()).
-					Times(0)
+					GetAccount(mock.Anything, mock.Anything).
+					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, rec.Code)
@@ -96,9 +96,7 @@ func TestGetAccountAPI(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			store := mockdb.NewMockStore(ctrl)
+			store := mocks.NewStore(t)
 			tc.buildStubs(store)
 			server := NewServer(store)
 			rec := httptest.NewRecorder()
