@@ -2,6 +2,7 @@
 cover.out
 
 vendor
+internal/db/mock
 
 internal/db/sqlc/db.go
 internal/db/sqlc/models.go
@@ -9,3 +10,4 @@ internal/db/sqlc/querier.go
 internal/db/sqlc/*.sql.go
 
 !internal/db/sqlc/.keep
+!internal/db/mock/.keep

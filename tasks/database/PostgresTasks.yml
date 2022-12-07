@@ -33,7 +33,5 @@ tasks:
             -   cmd: podman exec -it postgres-db sh
     mock:
         cmds:
-            -   rm -rf vendor
-            -   mockgen -package mockdb -destination ./internal/db/mock/store.go github.com/dharmavagabond/simple-bank/internal/db/sqlc Store
-            -   go mod vendor
+            -   mockery --name=Store --with-expecter --recursive --output=./internal/db/mock
         silent: true
