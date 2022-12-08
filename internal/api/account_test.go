@@ -43,7 +43,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.
 					EXPECT().
 					GetAccount(mock.Anything, mock.IsType(account.ID)).
-					Times(1).
+					Once().
 					Return(account, nil)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -58,7 +58,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.
 					EXPECT().
 					GetAccount(mock.Anything, mock.IsType(account.ID)).
-					Times(1).
+					Once().
 					Return(db.Account{}, pgx.ErrNoRows)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -72,7 +72,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.
 					EXPECT().
 					GetAccount(mock.Anything, mock.IsType(account.ID)).
-					Times(1).
+					Once().
 					Return(db.Account{}, &pgconn.PgError{})
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
