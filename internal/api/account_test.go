@@ -42,7 +42,7 @@ func TestGetAccountAPI(t *testing.T) {
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.Anything, mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(account, nil)
 			},
@@ -57,7 +57,7 @@ func TestGetAccountAPI(t *testing.T) {
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.Anything, mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(db.Account{}, pgx.ErrNoRows)
 			},
@@ -71,7 +71,7 @@ func TestGetAccountAPI(t *testing.T) {
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.Anything, mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(db.Account{}, &pgconn.PgError{})
 			},
@@ -85,7 +85,7 @@ func TestGetAccountAPI(t *testing.T) {
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.Anything, mock.Anything).
+					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
