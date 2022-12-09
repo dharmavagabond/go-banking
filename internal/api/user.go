@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/alexedwards/argon2id"
 	dberrors "github.com/dharmavagabond/simple-bank/internal/db"
@@ -17,6 +18,13 @@ type (
 		Password string `json:"password" validate:"required,min=10"`
 		FullName string `json:"full_name" validate:"required"`
 		Email    string `json:"email" validate:"required,email"`
+	}
+	createUserResponse struct {
+		Username          string    `json:"username"`
+		FullName          string    `json:"full_name"`
+		Email             string    `json:"email"`
+		PasswordChangedAt time.Time `json:"password_changed_at"`
+		CreatedAt         time.Time `json:"created_at"`
 	}
 )
 
@@ -67,5 +75,13 @@ func (server *Server) createUser(ectx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return ectx.JSON(http.StatusOK, user)
+	crtUserRes := createUserResponse{
+		Username:          user.Username,
+		FullName:          user.FullName,
+		Email:             user.Email,
+		PasswordChangedAt: user.PasswordChangedAt,
+		CreatedAt:         user.CreatedAt,
+	}
+
+	return ectx.JSON(http.StatusOK, crtUserRes)
 }
