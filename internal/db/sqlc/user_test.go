@@ -2,19 +2,26 @@ package db
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/Pallinder/go-randomdata"
+	"github.com/alexedwards/argon2id"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomUser(arg *CreateUserParams) (User, error) {
 	if arg == nil {
+		hash, err := argon2id.CreateHash(randomdata.Alphanumeric(16), argon2id.DefaultParams)
+
+		if err != nil {
+			return User{}, err
+		}
 
 		arg = &CreateUserParams{
-			Username:       randomdata.SillyName(),
-			HashedPassword: "secret",
+			Username:       strings.ToLower(randomdata.SillyName()),
+			HashedPassword: hash,
 			FullName:       randomdata.FullName(randomdata.RandomGender),
 			Email:          randomdata.Email(),
 		}
@@ -24,9 +31,12 @@ func createRandomUser(arg *CreateUserParams) (User, error) {
 }
 
 func TestCreateUser(t *testing.T) {
+	hash, err := argon2id.CreateHash(randomdata.SillyName(), argon2id.DefaultParams)
+	require.NoError(t, err)
+
 	arg := &CreateUserParams{
-		Username:       randomdata.SillyName(),
-		HashedPassword: "secret",
+		Username:       strings.ToLower(randomdata.SillyName()),
+		HashedPassword: hash,
 		FullName:       randomdata.FullName(randomdata.RandomGender),
 		Email:          randomdata.Email(),
 	}
