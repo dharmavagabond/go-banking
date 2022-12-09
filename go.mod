@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/MadAppGang/httplog v1.2.1
 	github.com/Pallinder/go-randomdata v1.2.0
+	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/cristalhq/aconfig v0.18.3
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/jackc/pgconn v1.13.0
