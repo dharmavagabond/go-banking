@@ -1,9 +1,11 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -42,6 +44,15 @@ func (server *Server) createAccount(ectx echo.Context) (err error) {
 	}
 
 	if account, err = server.store.CreateAccount(ectx.Request().Context(), arg); err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case "23503", "23505":
+				return echo.NewHTTPError(http.StatusForbidden, err.Error())
+			}
+		}
+
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
