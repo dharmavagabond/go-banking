@@ -9,12 +9,14 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Pallinder/go-randomdata"
 	"github.com/alexedwards/argon2id"
 	dberrors "github.com/dharmavagabond/simple-bank/internal/db"
 	"github.com/dharmavagabond/simple-bank/internal/db/mock"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgconn"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
@@ -26,6 +28,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          echo.Map
+		setupAuth     func(t *testing.T, req *http.Request, tokenMake token.Maker)
 		buildStubs    func(store *mocks.Store)
 		checkResponse func(t *testing.T, rec *httptest.ResponseRecorder)
 	}{
@@ -36,6 +39,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"password":  password,
 				"full_name": user.FullName,
 				"email":     user.Email,
+			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mocks.Store) {
 				arg := db.CreateUserParams{
@@ -72,6 +78,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"full_name": user.FullName,
 				"email":     user.Email,
 			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
@@ -90,6 +99,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"password":  password,
 				"full_name": user.FullName,
 				"email":     user.Email,
+			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
@@ -110,6 +122,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"full_name": user.FullName,
 				"email":     user.Email,
 			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
@@ -128,6 +143,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"full_name": user.FullName,
 				"email":     "invalid-email",
 			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
@@ -145,6 +163,9 @@ func TestCreateUserAPI(t *testing.T) {
 				"password":  "123",
 				"full_name": user.FullName,
 				"email":     user.Email,
+			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
@@ -169,10 +190,11 @@ func TestCreateUserAPI(t *testing.T) {
 			require.NoError(t, err)
 			body := bytes.NewReader(data)
 			url := "/users"
-			request, err := http.NewRequest(http.MethodPost, url, body)
-			request.Header.Add("Content-Type", "application/json")
+			req, err := http.NewRequest(http.MethodPost, url, body)
+			req.Header.Add("Content-Type", "application/json")
 			require.NoError(t, err)
-			server.router.ServeHTTP(rec, request)
+			tc.setupAuth(t, req, server.tokenMaker)
+			server.router.ServeHTTP(rec, req)
 			tc.checkResponse(t, rec)
 		})
 	}
