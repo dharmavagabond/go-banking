@@ -6,6 +6,7 @@ import (
 
 	dberrors "github.com/dharmavagabond/simple-bank/internal/db"
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
@@ -13,7 +14,6 @@ import (
 
 type (
 	createAccountRequest struct {
-		Owner    string `json:"owner" validate:"required"`
 		Currency string `json:"currency" validate:"required,currency"`
 	}
 
@@ -39,8 +39,9 @@ func (server *Server) createAccount(ectx echo.Context) (err error) {
 		return err
 	}
 
+	authPayload := ectx.Get(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 	}
 
@@ -80,6 +81,15 @@ func (server *Server) getAccount(ectx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	authPayload := ectx.Get(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
+
+	if account.Owner != authPayload.Username {
+		return echo.NewHTTPError(
+			http.StatusUnauthorized,
+			errors.New("The account doesn't belong to the authenticated user"),
+		)
+	}
+
 	return ectx.JSON(http.StatusOK, account)
 }
 
@@ -98,7 +108,9 @@ func (server *Server) listAccounts(ectx echo.Context) (err error) {
 		return err
 	}
 
+	authPayload := ectx.Get(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}

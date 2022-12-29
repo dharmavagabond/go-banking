@@ -60,3 +60,5 @@ jobs:
                 run: task app:test
                 env:
                     DB_DSN: ${{ secrets.POSTGRES_DSN }}
+                    APP_SECRET: ${{ secrets.APP_SECRET }}
+                    APP_TOKEN_SYMMETRIC_KEY: ${{ secrets.APP_TOKEN_SYMMETRIC_KEY }}

@@ -1,10 +1,13 @@
 package api
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -19,7 +22,11 @@ type (
 )
 
 func (server *Server) createTransfer(ectx echo.Context) (err error) {
-	var result db.TransferTxResult
+	var (
+		fromAccount db.Account
+		result      db.TransferTxResult
+		ok          bool
+	)
 
 	req := &transferRequest{}
 
@@ -31,11 +38,24 @@ func (server *Server) createTransfer(ectx echo.Context) (err error) {
 		return err
 	}
 
-	if ok, err := server.isSameCurrency(ectx, req.FromAccountID, req.Currency); !ok {
+	if fromAccount, err = getAccount(req.FromAccountID, server.store, ectx.Request().Context()); err != nil {
 		return err
 	}
 
-	if ok, err := server.isSameCurrency(ectx, req.ToAccountID, req.Currency); !ok {
+	authPayload := ectx.Get(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
+
+	if fromAccount.Owner != authPayload.Username {
+		return echo.NewHTTPError(
+			http.StatusUnauthorized,
+			errors.New("From account doesn't belong to the authenticated user"),
+		)
+	}
+
+	if ok, err = server.isSameCurrency(fromAccount, req.Currency); !ok {
+		return err
+	}
+
+	if ok, err = server.isSameCurrency(fromAccount, req.Currency); !ok {
 		return err
 	}
 
@@ -52,19 +72,19 @@ func (server *Server) createTransfer(ectx echo.Context) (err error) {
 	return ectx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) isSameCurrency(ectx echo.Context, accountID int64, currency string) (isOk bool, err error) {
-	var account db.Account
-
-	if account, err = server.store.GetAccount(ectx.Request().Context(), accountID); err != nil {
+func getAccount(accountID int64, store db.Store, ctx context.Context) (account db.Account, err error) {
+	if account, err = store.GetAccount(ctx, accountID); err != nil {
 		if err == pgx.ErrNoRows {
 			err = echo.NewHTTPError(http.StatusNotFound, err.Error())
 		} else {
 			err = echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
-
-		return
 	}
 
+	return
+}
+
+func (server *Server) isSameCurrency(account db.Account, currency string) (isOk bool, err error) {
 	if account.Currency != currency {
 		err = echo.NewHTTPError(
 			http.StatusInternalServerError,
