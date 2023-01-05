@@ -3,11 +3,11 @@ version: '3'
 tasks:
     up:
         cmds:
-            - migrate -path internal/db/migration -database $POSTGRES_DSN -verbose up
+            - migrate -path internal/db/migration -database $DB_DSN -verbose up
 
     down:
         cmds:
-            - migrate -path internal/db/migration -database $POSTGRES_DSN -verbose down
+            - migrate -path internal/db/migration -database $DB_DSN -verbose down
 
     create:
         cmds:
@@ -15,16 +15,17 @@ tasks:
 
     to:
         cmds:
-            - migrate -path internal/db/migration -database $POSTGRES_DSN  goto {{.CLI_ARGS}}
+            - migrate -path internal/db/migration -database $DB_DSN goto {{.CLI_ARGS}}
 
     force:
         cmds:
-            - migrate -path internal/db/migration -database $POSTGRES_DSN  force {{.CLI_ARGS}}
+            - migrate -path internal/db/migration -database $DB_DSN force {{.CLI_ARGS}}
 
     drop:
         cmds:
-            - migrate -path internal/db/migration -database $POSTGRES_DSN  drop
+            - migrate -path internal/db/migration -database $DB_DSN drop
 
     version:
         cmds:
-            - migrate -path internal/db/migration -database $POSTGRES_DSN  version
+            - migrate -path internal/db/migration -database $DB_DSN version
+

@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 		err    error
 	)
 
-	if dbpool, err = pgxpool.Connect(context.Background(), config.DB.DSN); err != nil {
+	if dbpool, err = pgxpool.Connect(context.Background(), config.Postgres.DSN); err != nil {
 		log.Fatal("[Err]: ", err)
 	}
 

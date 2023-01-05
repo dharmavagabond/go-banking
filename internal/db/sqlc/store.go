@@ -45,7 +45,7 @@ func NewStore() Store {
 
 		logger := echo.New().Logger
 
-		if dbconfig, err = pgxpool.ParseConfig(config.DB.DSN); err != nil {
+		if dbconfig, err = pgxpool.ParseConfig(config.Postgres.DSN); err != nil {
 			logger.Fatal("[Err]: ", err)
 		}
 
