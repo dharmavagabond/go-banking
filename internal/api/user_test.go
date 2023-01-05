@@ -13,11 +13,11 @@ import (
 
 	"github.com/Pallinder/go-randomdata"
 	"github.com/alexedwards/argon2id"
-	dberrors "github.com/dharmavagabond/simple-bank/internal/db"
 	"github.com/dharmavagabond/simple-bank/internal/db/mock"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -108,7 +108,7 @@ func TestCreateUserAPI(t *testing.T) {
 					EXPECT().
 					CreateUser(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
 					Once().
-					Return(db.User{}, &pgconn.PgError{Code: dberrors.ERRCODE_UNIQUE_VIOLATION})
+					Return(db.User{}, &pgconn.PgError{Code: pgerrcode.UniqueViolation})
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, rec.Code)

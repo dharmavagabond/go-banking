@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
-	dberrors "github.com/dharmavagabond/simple-bank/internal/db"
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -50,7 +50,7 @@ func (server *Server) createAccount(ectx echo.Context) (err error) {
 
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
-			case dberrors.ERRCODE_FOREIGN_KEY_VIOLATION, dberrors.ERRCODE_UNIQUE_VIOLATION:
+			case pgerrcode.ForeignKeyViolation, pgerrcode.UniqueViolation:
 				return echo.NewHTTPError(http.StatusForbidden, err.Error())
 			}
 		}

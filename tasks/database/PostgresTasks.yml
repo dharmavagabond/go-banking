@@ -1,36 +1,14 @@
 version: '3'
 
 tasks:
-    run:
-        cmds:
-            -   cmd: podman run -d --restart=always --name postgres-db --env-file=.env --publish=5432:5432 docker.io/postgres:15-alpine
-                silent: true
-
-    start:
-        cmds:
-            -   cmd: podman start postgres-db
-                silent: true
-
-    stop:
-        cmds:
-            -   cmd: podman stop postgres-db
-                silent: true
-
     create:
         cmds:
             -   cmd: podman exec -it postgres-db createdb --username=dharma --owner=dharma simple-bank
-
-    drop:
-        cmds:
-            -   cmd: podman exec -it postgres-db dropdb --username=dharma simple-bank
 
     psql:
         cmds:
             -   cmd: podman exec -it postgres-db psql --username=dharma simple-bank
 
-    sh:
-        cmds:
-            -   cmd: podman exec -it postgres-db sh
     mock:
         cmds:
             -   mockery --name=Store --with-expecter --recursive --output=./internal/db/mock
