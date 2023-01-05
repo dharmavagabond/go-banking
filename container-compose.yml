@@ -1,0 +1,30 @@
+version: '2.4'
+
+services:
+    simple-bank:
+        image: localhost/simple-bank:dev
+        build:
+            context: .
+            target: dev
+        init: true
+        ports:
+            - ${APP_PORT}:${APP_PORT}
+        env_file: .env
+        volumes:
+            - ./:/go/src/go-simple-bank:cached
+        depends_on:
+            postgres-db:
+                condition: service_started
+
+    postgres-db:
+        image: docker.io/postgres:15-alpine
+        init: true
+        restart: "always"
+        volumes:
+            - database-data:/var/lib/postgresql/data/:delegated
+        env_file: .env
+        ports:
+            - ${POSTGRES_PORT}:${POSTGRES_PORT}
+
+volumes:
+    database-data:

@@ -1,0 +1,13 @@
+.github
+tasks
+vendor
+
+.comet.json
+.commitlinter.yml
+.editorconfig
+.env
+.gitignore
+gowatch.yml
+README.md
+sqlc.yaml
+taskfile.yaml
