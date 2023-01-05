@@ -54,11 +54,12 @@ jobs:
             -   name: Run migrations
                 run: task migrate:up
                 env:
-                    POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
+                    DB_DSN: ${{ secrets.POSTGRES_DSN }}
 
             -   name: Test
-                run: task app:test
+                run: task app:test -- 127.0.0.1
                 env:
-                    DB_DSN: ${{ secrets.POSTGRES_DSN }}
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
                     APP_SECRET: ${{ secrets.APP_SECRET }}
                     APP_TOKEN_SYMMETRIC_KEY: ${{ secrets.APP_TOKEN_SYMMETRIC_KEY }}
