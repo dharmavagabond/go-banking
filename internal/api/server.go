@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
@@ -30,8 +31,8 @@ func (cv *customValidator) Validate(i interface{}) error {
 	return nil
 }
 
-func (server *Server) Start(address string) error {
-	return server.router.Start(address)
+func (server *Server) Start(port int) error {
+	return server.router.Start(fmt.Sprintf(`:%v`, port))
 }
 
 func NewServer(store db.Store) *Server {
