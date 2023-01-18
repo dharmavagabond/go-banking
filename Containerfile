@@ -15,10 +15,11 @@ WORKDIR /go/src/go-simple-bank
 FROM base AS dev
 
 RUN go install github.com/silenceper/gowatch@v1.5.2 && \
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
-	sh -s -- -b "$(go env GOPATH)"/bin v1.50.1
-
-CMD [ "/go/bin/gowatch" ]
+	go install github.com/go-task/task/v3/cmd/task@latest && \
+	mkdir migrate-cli && cd migrate-cli && \
+	curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz && \
+	mv migrate /usr/bin && rm -rf migrate-cli && \
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.50.1
 
 #####################
 ####### BUILD #######
