@@ -4,6 +4,12 @@ tasks:
     dev:
         cmds:
             - cmd: gowatch
+    deploy:
+        cmds:
+            -   podman build -t simple-bank:prod --target=prod .
+            -   podman tag simple-bank:prod 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
+            -   aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin 904004324775.dkr.ecr.us-east-1.amazonaws.com
+            -   podman push 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
     test:
         cmds:
             - cmd: POSTGRES_HOST={{.CLI_ARGS}} go test -v -cover ./...

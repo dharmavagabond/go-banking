@@ -1,4 +1,4 @@
-name: simple-bank-ci
+name: simple-bank-unit-tests
 
 on:
     pull_request:
