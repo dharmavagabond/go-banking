@@ -13,6 +13,15 @@ jobs:
             -   name: Checkout repository code
                 uses: actions/checkout@v3
 
+            -   name: Setup Go
+                uses: actions/setup-go@v3
+                with:
+                    go-version: '1.19.x'
+                    cache: true
+
+            -   name: Install SQLC
+                run: go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+
             -   name: Configure AWS Credentials
                 uses: aws-actions/configure-aws-credentials@v1
                 with:
@@ -30,5 +39,6 @@ jobs:
                     REPOSITORY: simple-bank
                     IMAGE_TAG: ${{ github.sha }}
                 run: |
+                    sqlc generate
                     docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG --target prod --compress -f Containerfile .
                     docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
