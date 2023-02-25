@@ -57,9 +57,10 @@ jobs:
                     DB_DSN: ${{ secrets.POSTGRES_DSN }}
 
             -   name: Test
-                run: task app:test -- 127.0.0.1
+                run: task app:test
                 env:
                     POSTGRES_USER: postgres
                     POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                    POSTGRES_HOST: 127.0.0.1
                     APP_SECRET: ${{ secrets.APP_SECRET }}
                     APP_TOKEN_SYMMETRIC_KEY: ${{ secrets.APP_TOKEN_SYMMETRIC_KEY }}

@@ -12,9 +12,7 @@ type PasetoMaker struct {
 	symmetricKey paseto.V4SymmetricKey
 }
 
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (token string, err error) {
-	var payload *Payload
-
+func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (token string, payload *Payload, err error) {
 	if payload, err = NewPayload(username, duration); err != nil {
 		return
 	}

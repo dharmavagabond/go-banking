@@ -9,8 +9,8 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/cristalhq/aconfig v0.18.3
 	github.com/go-playground/validator/v10 v10.11.1
-	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.3
+	github.com/google/uuid v1.3.0
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v4 v4.17.2

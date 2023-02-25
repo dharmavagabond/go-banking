@@ -3,7 +3,7 @@ package token
 import (
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 )
 
 type Payload struct {
@@ -22,14 +22,8 @@ func (payload *Payload) Valid() error {
 }
 
 func NewPayload(username string, duration time.Duration) (payload *Payload, err error) {
-	var tokenID uuid.UUID
-
-	if tokenID, err = uuid.NewV4(); err != nil {
-		return
-	}
-
 	payload = &Payload{
-		ID:        tokenID,
+		ID:        uuid.New(),
 		Username:  username,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),

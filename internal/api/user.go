@@ -8,6 +8,8 @@ import (
 	"github.com/alexedwards/argon2id"
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/token"
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
@@ -33,8 +35,12 @@ type (
 		Password string `json:"password" validate:"required,min=10"`
 	}
 	loginUserResponse struct {
-		AccessToken string       `json:"access_token"`
-		User        userResponse `json:"user"`
+		SessionID             uuid.UUID    `json:"session_id"`
+		AccessToken           string       `json:"access_token"`
+		AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+		RefreshToken          string       `json:"refresh_token"`
+		RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
+		User                  userResponse `json:"user"`
 	}
 )
 
@@ -100,10 +106,14 @@ func (server *Server) createUser(ectx echo.Context) (err error) {
 
 func (server *Server) loginUser(ectx echo.Context) (err error) {
 	var (
-		accessToken string
-		user        db.User
-		ok          bool
-		req         = &loginUserRequest{}
+		session             db.Session
+		accessToken         string
+		accessTokenPayload  *token.Payload
+		refreshToken        string
+		refreshTokenPayload *token.Payload
+		user                db.User
+		ok                  bool
+		req                 = &loginUserRequest{}
 	)
 
 	if err = ectx.Bind(req); err != nil {
@@ -128,13 +138,35 @@ func (server *Server) loginUser(ectx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Contraseña incorrecta.")
 	}
 
-	if accessToken, err = server.tokenMaker.CreateToken(user.Username, config.App.AccessTokenDuration); err != nil {
+	if accessToken, accessTokenPayload, err = server.tokenMaker.CreateToken(user.Username, config.App.AccessTokenDuration); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	if refreshToken, refreshTokenPayload, err = server.tokenMaker.CreateToken(
+		req.Username,
+		config.App.RefreshTokenDuration,
+	); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	if session, err = server.store.CreateSession(ectx.Request().Context(), db.CreateSessionParams{
+		ID:           refreshTokenPayload.ID,
+		Username:     req.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    ectx.Request().UserAgent(),
+		ClientIp:     ectx.RealIP(),
+		ExpiresAt:    refreshTokenPayload.ExpiredAt,
+	}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	res := loginUserResponse{
-		AccessToken: accessToken,
-		User:        newUserResponse(user),
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
+		User:                  newUserResponse(user),
 	}
 
 	return ectx.JSON(http.StatusOK, res)

@@ -73,4 +73,5 @@ func (server *Server) setupRouter() {
 	server.router.POST("/accounts", server.createAccount, authMiddleware)
 	server.router.POST("/transfers", server.createTransfer, authMiddleware)
 	server.router.POST("/users", server.createUser, authMiddleware)
+	server.router.POST("/token/refresh", server.renewAccessToken)
 }
