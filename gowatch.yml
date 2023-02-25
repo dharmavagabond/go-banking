@@ -5,4 +5,3 @@ run_cmd: /tmp/simple-bank
 prev_build_cmds:
     - golangci-lint run ./... --fix --new --issues-exit-code 0
 log_level: warn
-

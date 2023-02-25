@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
     dev:
@@ -6,10 +6,10 @@ tasks:
             - cmd: gowatch
     deploy:
         cmds:
-            -   podman build -t simple-bank:prod --target=prod .
-            -   podman tag simple-bank:prod 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
-            -   aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin 904004324775.dkr.ecr.us-east-1.amazonaws.com
-            -   podman push 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
+            - podman build -t simple-bank:prod --target=prod .
+            - podman tag simple-bank:prod 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
+            - aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin 904004324775.dkr.ecr.us-east-1.amazonaws.com
+            - podman push 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
     test:
         cmds:
             - cmd: gotestsum -- -count={{.TEST_COUNT | default 0}} ./...

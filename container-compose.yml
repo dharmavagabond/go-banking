@@ -1,4 +1,4 @@
-version: '2.4'
+version: "2.4"
 
 services:
     simple-bank:
@@ -16,7 +16,7 @@ services:
             postgres-db:
                 condition: service_started
         entrypoint: ./entrypoint.sh
-        command: [ "gowatch" ]
+        command: ["gowatch"]
 
     postgres-db:
         image: docker.io/postgres:15-alpine

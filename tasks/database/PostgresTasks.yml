@@ -1,15 +1,15 @@
-version: '3'
+version: "3"
 
 tasks:
     create:
         cmds:
-            -   cmd: podman exec -it postgres-db createdb --username=dharma --owner=dharma simple-bank
+            - cmd: podman exec -it postgres-db createdb --username=dharma --owner=dharma simple-bank
 
     psql:
         cmds:
-            -   cmd: podman exec -it postgres-db psql --username=dharma simple-bank
+            - cmd: podman exec -it postgres-db psql --username=dharma simple-bank
 
     mock:
         cmds:
-            -   mockery --name=Store --with-expecter --recursive --output=./internal/db/mock
+            - mockery --name=Store --with-expecter --recursive --output=./internal/db/mock
         silent: true

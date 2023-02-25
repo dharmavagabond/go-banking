@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
     up:
@@ -28,4 +28,3 @@ tasks:
     version:
         cmds:
             - migrate -path internal/db/migration -database $DB_DSN version
-
