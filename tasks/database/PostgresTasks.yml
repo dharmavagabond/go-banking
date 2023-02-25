@@ -13,3 +13,7 @@ tasks:
         cmds:
             - mockery --name=Store --with-expecter --recursive --output=./internal/db/mock
         silent: true
+
+    schema:
+        cmds:
+            - cmd: dbml2sql --postgres -o doc/schema.sql doc/db.dbml
