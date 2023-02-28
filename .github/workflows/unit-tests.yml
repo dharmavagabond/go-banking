@@ -49,7 +49,10 @@ jobs:
               uses: arduino/setup-task@v1
 
             - name: SQLC Generate
-              run: task sqlc:generate
+              run: task generate:sqlc
+
+            - name: Proto Generate
+              run: task generate:proto
 
             - name: Mock DB
               run: task db:mock
