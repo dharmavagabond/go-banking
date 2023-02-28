@@ -4,8 +4,8 @@ dbml-error.log
 
 vendor
 doc/*
-internal/db/mock
-internal/pb
+internal/db/mock/*
+internal/pb/*
 
 internal/db/sqlc/db.go
 internal/db/sqlc/models.go

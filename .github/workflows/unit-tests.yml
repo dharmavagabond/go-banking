@@ -45,6 +45,12 @@ jobs:
                   curl -L https://github.com/vektra/mockery/releases/download/v2.15.0/mockery_2.15.0_Linux_x86_64.tar.gz | tar xvz
                   sudo mv mockery /usr/bin
 
+            - name: Install the protocol compiler
+              run: |
+                  sudo apt install -y protobuf-compiler
+                  go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+                  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+
             - name: Install Task
               uses: arduino/setup-task@v1
 
