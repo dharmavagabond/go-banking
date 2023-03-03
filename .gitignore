@@ -2,6 +2,7 @@
 cover.out
 dbml-error.log
 
+tmp
 vendor
 doc/*
 internal/db/mock/*

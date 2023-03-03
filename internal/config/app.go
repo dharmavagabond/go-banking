@@ -9,7 +9,8 @@ import (
 
 type AppConfig = struct {
 	Host                 string        `default:"localhost" env:"HOST"`
-	Port                 int           `default:"8080" env:"PORT"`
+	HttpPort             int           `default:"8080" env:"HTTP_PORT"`
+	GrpcPort             int           `default:"9090" env:"GRPC_PORT"`
 	Env                  string        `default:"production" env:"ENV"`
 	IsDev                bool          `default:"false"`
 	Secret               string        `env:"SECRET"`

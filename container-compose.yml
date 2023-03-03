@@ -16,7 +16,7 @@ services:
             postgres-db:
                 condition: service_started
         entrypoint: ./entrypoint.sh
-        command: ["gowatch"]
+        command: ["air"]
 
     postgres-db:
         image: docker.io/postgres:15-alpine
