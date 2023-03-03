@@ -1,8 +1,11 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
@@ -31,23 +34,21 @@ func (cv *customValidator) Validate(i interface{}) error {
 	return nil
 }
 
-func (server *Server) Start(port int) error {
-	return server.router.Start(fmt.Sprintf(`:%v`, port))
+func (server *Server) Start() error {
+	address := net.JoinHostPort("", strconv.Itoa(config.App.HttpPort))
+	return server.router.Start(address)
 }
 
-func NewServer(store db.Store) *Server {
-	var (
-		tokenMaker token.Maker
-		err        error
-	)
+func NewServer(store db.Store) (server *Server, err error) {
+	var tokenMaker token.Maker
 
 	router := echo.New()
 
 	if tokenMaker, err = token.NewPasetoMaker(config.App.TokenSymmetricKey); err != nil {
-		router.Logger.Fatalf("%v: %v", token.ERR_CANT_CREATE_TOKEN_MAKER, err)
+		return nil, errors.New(fmt.Sprintf("%v: %v", token.ERR_CANT_CREATE_TOKEN_MAKER, err))
 	}
 
-	server := &Server{
+	server = &Server{
 		store:      store,
 		tokenMaker: tokenMaker,
 	}
@@ -57,12 +58,12 @@ func NewServer(store db.Store) *Server {
 	server.router = router
 
 	if err = sbvalidator.RegisterValidation("currency", validCurrency); err != nil {
-		router.Logger.Fatal(err)
+		return nil, err
 	}
 
 	server.setupRouter()
 
-	return server
+	return server, nil
 }
 
 func (server *Server) setupRouter() {

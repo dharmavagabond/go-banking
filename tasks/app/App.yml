@@ -13,3 +13,6 @@ tasks:
     test:
         cmds:
             - cmd: gotestsum -- -count={{.TEST_COUNT | default 0}} ./...
+    evans:
+        cmds:
+            - cmd: evans --host 192.168.64.12 --port 9090 --path proto --proto user.proto,rpc_create_user.proto,rpc_login_user.proto,service_simple_bank.proto,user.proto repl
