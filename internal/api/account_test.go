@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -150,7 +150,8 @@ func TestGetAccountAPI(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			store := mocks.NewStore(t)
 			tc.buildStubs(store)
-			server := NewServer(store)
+			server, err := NewServer(store)
+			require.NoError(t, err)
 			rec := httptest.NewRecorder()
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
 			req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -164,7 +165,7 @@ func TestGetAccountAPI(t *testing.T) {
 
 func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, expected db.Account) {
 	var account db.Account
-	data, err := ioutil.ReadAll(body)
+	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 	err = json.Unmarshal(data, &account)
 	require.NoError(t, err)
