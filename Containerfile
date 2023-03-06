@@ -19,7 +19,7 @@ RUN go install github.com/cosmtrek/air@latest && \
   mkdir migrate-cli && cd migrate-cli && \
   curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz && \
   mv migrate /usr/bin && cd .. && rm -rf migrate-cli && \
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.50.1
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.51.2
 
 #####################
 ####### BUILD #######
