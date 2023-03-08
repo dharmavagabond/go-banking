@@ -10,7 +10,7 @@ import (
 func main() {
 	logger := echo.New().Logger
 	store := db.NewStore()
-	logger.Fatal(runHttpServer(store))
+	logger.Fatal(rungRPCServer(store))
 }
 
 func rungRPCServer(store db.Store) error {
