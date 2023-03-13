@@ -98,12 +98,14 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	mtdt := server.extractMetadata(ctx)
+
 	if session, err = server.store.CreateSession(ctx, db.CreateSessionParams{
 		ID:           refreshTokenPayload.ID,
 		Username:     req.Username,
 		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIp:     "",
+		UserAgent:    mtdt.UserAgent,
+		ClientIp:     mtdt.ClientIP,
 		ExpiresAt:    refreshTokenPayload.ExpiredAt,
 	}); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
