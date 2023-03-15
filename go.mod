@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/labstack/echo/v4 v4.10.0
+	github.com/rakyll/statik v0.1.7
 	github.com/stretchr/testify v1.8.1
 	github.com/thanhpk/randstr v1.0.4
 	golang.org/x/crypto v0.2.0

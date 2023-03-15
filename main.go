@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/dharmavagabond/simple-bank/doc/statik"
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/http/grpc"
@@ -14,6 +15,7 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/labstack/echo/v4"
+	"github.com/rakyll/statik/fs"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -52,6 +54,7 @@ func runGrpcServer(store db.Store) error {
 func runGatewayServer(store db.Store) error {
 	var (
 		server   *grpc.Server
+		statikFs http.FileSystem
 		listener net.Listener
 		err      error
 	)
@@ -78,10 +81,15 @@ func runGatewayServer(store db.Store) error {
 	}
 
 	mux := http.NewServeMux()
-	fs := http.FileServer(http.Dir("./doc/swagger"))
+
+	if statikFs, err = fs.New(); err != nil {
+		return err
+	}
+
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFs))
 
 	mux.Handle("/", grpcMux)
-	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+	mux.Handle("/swagger/", swaggerHandler)
 
 	if listener, err = net.Listen("tcp", addr); err != nil {
 		return err
