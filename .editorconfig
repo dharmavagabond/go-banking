@@ -11,5 +11,5 @@ trim_trailing_whitespace = true
 [{*.yml, *.proto}]
 indent_style = space
 
-[{Containerfile,README.md,*.yml}]
+[{Dockerfile,README.md,*.yml}]
 indent_size = 4
