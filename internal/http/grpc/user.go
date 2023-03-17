@@ -137,13 +137,22 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (res *pb.UpdateUserResponse, err error) {
 	var (
+		authPayload      *token.Payload
 		user             db.User
 		hashPassword     string
 		isPasswordHashed bool
 	)
 
+	if authPayload, err = server.authorizeUser(ctx); err != nil {
+		return nil, unauthenticatedError(err)
+	}
+
 	if violations := validateUpdateUserRequest(req); len(violations) > 0 {
 		return nil, invalidArgumentError(violations)
+	}
+
+	if authPayload.Username != req.GetUsername() {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot update other user's info")
 	}
 
 	if len(req.GetPassword()) > 0 {
