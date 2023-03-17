@@ -2,7 +2,9 @@ package grpc
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/dharmavagabond/simple-bank/internal/config"
@@ -133,6 +135,60 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	return res, nil
 }
 
+func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (res *pb.UpdateUserResponse, err error) {
+	var (
+		user             db.User
+		hashPassword     string
+		isPasswordHashed bool
+	)
+
+	if violations := validateUpdateUserRequest(req); len(violations) > 0 {
+		return nil, invalidArgumentError(violations)
+	}
+
+	if len(req.GetPassword()) > 0 {
+		if hashPassword, err = argon2id.CreateHash(req.GetPassword(), argonParams); err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to hash the password: %s", err.Error())
+		}
+
+		isPasswordHashed = true
+	}
+
+	arg := db.UpdateUserParams{
+		Username: req.GetUsername(),
+		HashedPassword: sql.NullString{
+			String: hashPassword,
+			Valid:  isPasswordHashed,
+		},
+		FullName: sql.NullString{
+			String: req.GetFullName(),
+			Valid:  len(req.GetFullName()) > 0,
+		},
+		Email: sql.NullString{
+			String: req.GetEmail(),
+			Valid:  len(req.GetEmail()) > 0,
+		},
+		PasswordChangedAt: sql.NullTime{
+			Time:  time.Now(),
+			Valid: isPasswordHashed,
+		},
+	}
+
+	if user, err = server.store.UpdateUser(ctx, arg); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "user not Found: %s", err.Error())
+		}
+
+		return nil, status.Errorf(codes.Internal, "failed to update user: %s", err.Error())
+	}
+
+	res = &pb.UpdateUserResponse{
+		User: convertUser(user),
+	}
+
+	return res, nil
+}
+
 func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
@@ -160,6 +216,32 @@ func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetail
 
 	if err := valid.ValidatePassword(req.GetPassword()); err != nil {
 		violations = append(violations, fieldViolation("password", err))
+	}
+
+	return violations
+}
+
+func validateUpdateUserRequest(req *pb.UpdateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
+		violations = append(violations, fieldViolation("username", err))
+	}
+
+	if len(req.GetPassword()) > 0 {
+		if err := valid.ValidatePassword(req.GetPassword()); err != nil {
+			violations = append(violations, fieldViolation("password", err))
+		}
+	}
+
+	if len(req.GetFullName()) > 0 {
+		if err := valid.ValidateFullname(req.GetFullName()); err != nil {
+			violations = append(violations, fieldViolation("full_name", err))
+		}
+	}
+
+	if len(req.GetEmail()) > 0 {
+		if err := valid.ValidateEmail(req.GetEmail()); err != nil {
+			violations = append(violations, fieldViolation("email", err))
+		}
 	}
 
 	return violations
