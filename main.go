@@ -4,14 +4,12 @@ import (
 	"context"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 
 	_ "github.com/dharmavagabond/simple-bank/doc/statik"
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/http/grpc"
-	"github.com/dharmavagabond/simple-bank/internal/http/rest"
 	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
@@ -20,12 +18,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/encoding/protojson"
 )
-
-func init() {
-	if config.App.IsDev {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-}
 
 func main() {
 	var eg errgroup.Group
@@ -104,18 +96,5 @@ func runGatewayServer(store db.Store) error {
 
 	log.Info().Msgf("Listening HTTP gateway at %s", listener.Addr().String())
 
-	return http.Serve(listener, mux)
-}
-
-func runHttpServer(store db.Store) error {
-	var (
-		server *rest.Server
-		err    error
-	)
-
-	if server, err = rest.NewServer(store); err != nil {
-		return err
-	}
-
-	return server.Start()
+	return http.Serve(listener, grpc.HttpLogger(mux))
 }
