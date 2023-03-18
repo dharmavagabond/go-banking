@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 
 	_ "github.com/dharmavagabond/simple-bank/doc/statik"
@@ -14,17 +14,24 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/http/rest"
 	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/labstack/echo/v4"
 	"github.com/rakyll/statik/fs"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func init() {
+	if config.App.IsDev {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+}
+
 func main() {
 	var eg errgroup.Group
 
-	logger := echo.New().Logger
 	store := db.NewStore()
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	eg.Go(func() error {
 		return runGatewayServer(store)
@@ -34,7 +41,7 @@ func main() {
 	})
 
 	if err := eg.Wait(); err != nil {
-		logger.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }
 
@@ -95,7 +102,7 @@ func runGatewayServer(store db.Store) error {
 		return err
 	}
 
-	log.Printf("Listening HTTP gateway at %s", listener.Addr().String())
+	log.Info().Msgf("Listening HTTP gateway at %s", listener.Addr().String())
 
 	return http.Serve(listener, mux)
 }

@@ -1,10 +1,10 @@
 package config
 
 import (
-	"log"
 	"time"
 
 	"github.com/cristalhq/aconfig"
+	"github.com/rs/zerolog/log"
 )
 
 type AppConfig = struct {
@@ -27,7 +27,7 @@ func init() {
 	loader := aconfig.LoaderFor(&App, *configOptions)
 
 	if err := loader.Load(); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 
 	App.IsDev = App.Env == "development"

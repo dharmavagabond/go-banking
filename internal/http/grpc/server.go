@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"log"
 	"net"
 	"strconv"
 
@@ -9,7 +8,8 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"github.com/dharmavagabond/simple-bank/internal/token"
-	rpc "google.golang.org/grpc"
+	"github.com/rs/zerolog/log"
+	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -27,8 +27,9 @@ func (server *Server) Start() error {
 		err      error
 	)
 
-	rpcServer := rpc.NewServer()
 	addr := net.JoinHostPort(config.App.Host, strconv.Itoa(config.App.GrpcPort))
+	grpcLogger := ggrpc.UnaryInterceptor(gRpcLogger)
+	rpcServer := ggrpc.NewServer(grpcLogger)
 
 	pb.RegisterSimpleBankServer(rpcServer, server)
 	reflection.Register(rpcServer)
@@ -37,7 +38,7 @@ func (server *Server) Start() error {
 		return err
 	}
 
-	log.Printf("Listening gRPC at %s", listener.Addr().String())
+	log.Info().Msgf("Listening gRPC at %s", listener.Addr().String())
 
 	return rpcServer.Serve(listener)
 }

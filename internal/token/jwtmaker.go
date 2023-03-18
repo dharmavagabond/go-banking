@@ -2,10 +2,11 @@ package token
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/rs/zerolog/log"
 )
 
 const MIN_SECRET_KEY_LENGTH = 32
@@ -36,7 +37,7 @@ func (maker *JWTMaker) VerifyToken(token string) (payload *Payload, err error) {
 
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			log.Printf("%v: %v\n", ERR_UNEXPECTED_JWT_SIGNING_METHOD, token.Header["alg"])
+			log.Error().Err(fmt.Errorf("%v: %s\n", ERR_UNEXPECTED_JWT_SIGNING_METHOD, token.Header["alg"]))
 			return nil, ERR_UNEXPECTED_JWT_SIGNING_METHOD
 		}
 
