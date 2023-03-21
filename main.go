@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"strconv"
@@ -25,15 +26,23 @@ func main() {
 	store := db.NewStore()
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	eg.Go(func() error {
-		return runGatewayServer(store)
+	eg.Go(func() (err error) {
+		if err = runGatewayServer(store); err != nil {
+			err = fmt.Errorf("Gateway Server: %w", err)
+		}
+
+		return err
 	})
-	eg.Go(func() error {
-		return runGrpcServer(store)
+	eg.Go(func() (err error) {
+		if err = runGrpcServer(store); err != nil {
+			err = fmt.Errorf("gRPC server: %w", err)
+		}
+
+		return err
 	})
 
 	if err := eg.Wait(); err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("Err")
 	}
 }
 
