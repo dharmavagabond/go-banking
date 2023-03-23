@@ -7,6 +7,7 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -34,12 +35,24 @@ func NewRedisTaskProcessor(store db.Store) TaskProcessor {
 	rcopt := asynq.RedisClientOpt{
 		Addr: net.JoinHostPort(config.Redis.Host, config.Redis.Port),
 	}
-	server := asynq.NewServer(rcopt, asynq.Config{
-		Queues: map[string]int{
-			QueueCritical: 10,
-			QueueDefault:  5,
-		},
-	})
+	server := asynq.NewServer(
+		rcopt,
+		asynq.Config{
+			Queues: map[string]int{
+				QueueCritical: 10,
+				QueueDefault:  5,
+			},
+			Logger: NewWorkerLogger(),
+			ErrorHandler: asynq.ErrorHandlerFunc(
+				func(ctx context.Context, task *asynq.Task, err error) {
+					log.Error().
+						Err(err).
+						Str("type", task.Type()).
+						Bytes("payload", task.Payload()).
+						Msg("[process-task]")
+				},
+			),
+		})
 
 	return &RedisTaskProcessor{
 		server: server,
