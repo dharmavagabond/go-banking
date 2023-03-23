@@ -5,9 +5,10 @@ import (
 	"strconv"
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
-	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"github.com/dharmavagabond/simple-bank/internal/token"
+	"github.com/dharmavagabond/simple-bank/internal/worker"
 	"github.com/rs/zerolog/log"
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -16,8 +17,9 @@ import (
 type (
 	Server struct {
 		pb.UnimplementedSimpleBankServer
-		store      db.Store
-		tokenMaker token.Maker
+		store           db.Store
+		tokenMaker      token.Maker
+		taskDistributor worker.TaskDistributor
 	}
 )
 
@@ -43,7 +45,7 @@ func (server *Server) Start() error {
 	return rpcServer.Serve(listener)
 }
 
-func NewServer(store db.Store) (server *Server, err error) {
+func NewServer(store db.Store, taskDistributor worker.TaskDistributor) (server *Server, err error) {
 	var tokenMaker token.Maker
 
 	if tokenMaker, err = token.NewPasetoMaker(config.App.TokenSymmetricKey); err != nil {
@@ -51,8 +53,9 @@ func NewServer(store db.Store) (server *Server, err error) {
 	}
 
 	server = &Server{
-		store:      store,
-		tokenMaker: tokenMaker,
+		store:           store,
+		tokenMaker:      tokenMaker,
+		taskDistributor: taskDistributor,
 	}
 
 	return server, nil

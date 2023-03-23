@@ -29,5 +29,14 @@ services:
         ports:
             - ${POSTGRES_PORT}:${POSTGRES_PORT}
 
+    redis-server:
+        image: redis:7-alpine
+        init: true
+        restart: always
+        sysctls:
+            - net.core.somaxconn=1024
+        env_file:
+            - .env
+
 volumes:
     database-data:

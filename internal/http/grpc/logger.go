@@ -36,7 +36,12 @@ func init() {
 	}
 }
 
-func gRpcLogger(ctx context.Context, req interface{}, info *ggrpc.UnaryServerInfo, handler ggrpc.UnaryHandler) (interface{}, error) {
+func gRpcLogger(
+	ctx context.Context,
+	req interface{},
+	info *ggrpc.UnaryServerInfo,
+	handler ggrpc.UnaryHandler,
+) (interface{}, error) {
 	var logger *zerolog.Event
 
 	startTime := time.Now()
@@ -81,7 +86,7 @@ func HttpLogger(handler http.Handler) http.Handler {
 		handler.ServeHTTP(rec, r)
 		duration := time.Since(startTime)
 
-		if rec.StatusCode >= http.StatusOK && rec.StatusCode <= 299 {
+		if rec.StatusCode <= 299 {
 			logger = log.Info()
 		} else {
 			logger = log.Error().Bytes("body", rec.Body)

@@ -15,6 +15,7 @@ import (
 type Store interface {
 	Querier
 	TransferTx(context.Context, CreateTransferParams) (TransferTxResult, error)
+	CreateUserTx(context.Context, CreateUserTxParams) (CreateUserTxResult, error)
 }
 
 type SQLStore struct {
@@ -89,7 +90,10 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 	return tx.Commit(ctx)
 }
 
-func (store *SQLStore) TransferTx(ctx context.Context, arg CreateTransferParams) (result TransferTxResult, txError error) {
+func (store *SQLStore) TransferTx(
+	ctx context.Context,
+	arg CreateTransferParams,
+) (result TransferTxResult, txError error) {
 	txError = store.execTx(ctx, func(q *Queries) (err error) {
 		if result.Transfer, err = q.CreateTransfer(
 			ctx,
@@ -123,7 +127,13 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg CreateTransferParams)
 		}
 
 		if arg.FromAccountID < arg.ToAccountID {
-			result.FromAccount, result.ToAccount, err = transferMoney(ctx, q, arg.FromAccountID, arg.ToAccountID, -arg.Amount)
+			result.FromAccount, result.ToAccount, err = transferMoney(
+				ctx,
+				q,
+				arg.FromAccountID,
+				arg.ToAccountID,
+				-arg.Amount,
+			)
 		} else {
 			result.ToAccount, result.FromAccount, err = transferMoney(ctx, q, arg.ToAccountID, arg.FromAccountID, arg.Amount)
 		}

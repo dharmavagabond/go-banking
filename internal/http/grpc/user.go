@@ -8,10 +8,12 @@ import (
 
 	"github.com/alexedwards/argon2id"
 	"github.com/dharmavagabond/simple-bank/internal/config"
-	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/dharmavagabond/simple-bank/internal/valid"
+	"github.com/dharmavagabond/simple-bank/internal/worker"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
@@ -29,9 +31,12 @@ var argonParams = &argon2id.Params{
 	KeyLength:   128,
 }
 
-func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (res *pb.CreateUserResponse, err error) {
+func (server *Server) CreateUser(
+	ctx context.Context,
+	req *pb.CreateUserRequest,
+) (res *pb.CreateUserResponse, err error) {
 	var (
-		user         db.User
+		txResult     db.CreateUserTxResult
 		hashPassword string
 	)
 
@@ -43,20 +48,38 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Errorf(codes.Internal, "failed to hash the password: %s", err.Error())
 	}
 
-	arg := db.CreateUserParams{
-		Username:       req.GetUsername(),
-		HashedPassword: hashPassword,
-		FullName:       req.GetFullName(),
-		Email:          req.GetEmail(),
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			Username:       req.GetUsername(),
+			HashedPassword: hashPassword,
+			FullName:       req.GetFullName(),
+			Email:          req.GetEmail(),
+		},
+		AfterCreate: func(user db.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: user.Username,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
 
-	if user, err = server.store.CreateUser(ctx, arg); err != nil {
+	if txResult, err = server.store.CreateUserTx(ctx, arg); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return nil, status.Errorf(codes.AlreadyExists, "username already exists: %s", err.Error())
+				return nil, status.Errorf(
+					codes.AlreadyExists,
+					"username already exists: %s",
+					err.Error(),
+				)
 			}
 		}
 
@@ -64,13 +87,16 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	}
 
 	res = &pb.CreateUserResponse{
-		User: convertUser(user),
+		User: convertUser(txResult.User),
 	}
 
 	return res, nil
 }
 
-func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (res *pb.LoginUserResponse, err error) {
+func (server *Server) LoginUser(
+	ctx context.Context,
+	req *pb.LoginUserRequest,
+) (res *pb.LoginUserResponse, err error) {
 	var (
 		user                db.User
 		ok                  bool
@@ -135,7 +161,10 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	return res, nil
 }
 
-func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (res *pb.UpdateUserResponse, err error) {
+func (server *Server) UpdateUser(
+	ctx context.Context,
+	req *pb.UpdateUserRequest,
+) (res *pb.UpdateUserResponse, err error) {
 	var (
 		authPayload      *token.Payload
 		user             db.User
@@ -157,7 +186,11 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 
 	if len(req.GetPassword()) > 0 {
 		if hashPassword, err = argon2id.CreateHash(req.GetPassword(), argonParams); err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to hash the password: %s", err.Error())
+			return nil, status.Errorf(
+				codes.Internal,
+				"failed to hash the password: %s",
+				err.Error(),
+			)
 		}
 
 		isPasswordHashed = true
@@ -198,7 +231,9 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 	return res, nil
 }
 
-func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+func validateCreateUserRequest(
+	req *pb.CreateUserRequest,
+) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
@@ -218,7 +253,9 @@ func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdeta
 	return violations
 }
 
-func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+func validateLoginUserRequest(
+	req *pb.LoginUserRequest,
+) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
@@ -230,7 +267,9 @@ func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetail
 	return violations
 }
 
-func validateUpdateUserRequest(req *pb.UpdateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+func validateUpdateUserRequest(
+	req *pb.UpdateUserRequest,
+) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}

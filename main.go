@@ -12,6 +12,7 @@ import (
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/http/grpc"
 	"github.com/dharmavagabond/simple-bank/internal/pb"
+	"github.com/dharmavagabond/simple-bank/internal/worker"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/zerolog"
@@ -20,22 +21,33 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func init() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+}
+
 func main() {
 	var eg errgroup.Group
 
 	store := db.NewStore()
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	taskDistributor := worker.NewRedisTaskDistributor()
 
 	eg.Go(func() (err error) {
-		if err = runGatewayServer(store); err != nil {
+		if err = runGatewayServer(store, taskDistributor); err != nil {
 			err = fmt.Errorf("Gateway Server: %w", err)
 		}
 
 		return err
 	})
 	eg.Go(func() (err error) {
-		if err = runGrpcServer(store); err != nil {
+		if err = runGrpcServer(store, taskDistributor); err != nil {
 			err = fmt.Errorf("gRPC server: %w", err)
+		}
+
+		return err
+	})
+	eg.Go(func() (err error) {
+		if err = runTaskProcessor(store); err != nil {
+			err = fmt.Errorf("failed to run task processor: %w", err)
 		}
 
 		return err
@@ -46,20 +58,20 @@ func main() {
 	}
 }
 
-func runGrpcServer(store db.Store) error {
+func runGrpcServer(store db.Store, taskDistributor worker.TaskDistributor) error {
 	var (
 		server *grpc.Server
 		err    error
 	)
 
-	if server, err = grpc.NewServer(store); err != nil {
+	if server, err = grpc.NewServer(store, taskDistributor); err != nil {
 		return err
 	}
 
 	return server.Start()
 }
 
-func runGatewayServer(store db.Store) error {
+func runGatewayServer(store db.Store, taskDistributor worker.TaskDistributor) error {
 	var (
 		server   *grpc.Server
 		statikFs http.FileSystem
@@ -80,7 +92,7 @@ func runGatewayServer(store db.Store) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if server, err = grpc.NewServer(store); err != nil {
+	if server, err = grpc.NewServer(store, taskDistributor); err != nil {
 		return err
 	}
 
@@ -106,4 +118,15 @@ func runGatewayServer(store db.Store) error {
 	log.Info().Msgf("Listening HTTP gateway at %s", listener.Addr().String())
 
 	return http.Serve(listener, grpc.HttpLogger(mux))
+}
+
+func runTaskProcessor(store db.Store) error {
+	proc := worker.NewRedisTaskProcessor(store)
+	log.Info().Msg("start task processor")
+
+	if err := proc.Start(); err != nil {
+		return err
+	}
+
+	return nil
 }
