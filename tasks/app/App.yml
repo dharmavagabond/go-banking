@@ -17,4 +17,4 @@ tasks:
             - cmd: gotestsum -- -count={{.TEST_COUNT | default 0}} ./...
     evans:
         cmds:
-            - cmd: evans --host {{.APP_HOST}} --port {{.APP_GRPC_PORT}} -r repl
+            - cmd: evans --host localhost --port {{.APP_GRPC_PORT}} -r repl
