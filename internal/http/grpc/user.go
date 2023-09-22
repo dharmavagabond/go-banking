@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"time"
 
@@ -105,6 +106,7 @@ func (server *Server) LoginUser(
 		accessTokenPayload  *token.Payload
 		refreshToken        string
 		refreshTokenPayload *token.Payload
+		sessionId           driver.Value
 	)
 
 	if violations := validateLoginUserRequest(req); len(violations) > 0 {
@@ -149,8 +151,12 @@ func (server *Server) LoginUser(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	if sessionId, err = session.ID.Value(); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	res = &pb.LoginUserResponse{
-		SessionId:             string(session.ID.Bytes[:]),
+		SessionId:             sessionId.(string),
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  timestamppb.New(accessTokenPayload.ExpiredAt),
 		RefreshToken:          refreshToken,
