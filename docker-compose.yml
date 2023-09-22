@@ -16,8 +16,9 @@ services:
         depends_on:
             postgres-db:
                 condition: service_started
-        entrypoint: ./entrypoint.sh
-        command: ["air"]
+        entrypoint: ./scripts/entrypoint.sh
+        command: arelo -p '**/*.go' -i scripts -i proto -i tasks -i doc -i tools -- sh ./scripts/run-app.sh
+
 
     postgres-db:
         image: docker.io/postgres:15-alpine

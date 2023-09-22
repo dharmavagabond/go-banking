@@ -14,7 +14,7 @@ WORKDIR /go/src/go-simple-bank
 
 FROM base AS dev
 
-RUN go install github.com/cosmtrek/air@latest && \
+RUN go install github.com/makiuchi-d/arelo@latest && \
 	go install github.com/go-task/task/v3/cmd/task@latest && \
 	mkdir migrate-cli && cd migrate-cli && \
 	curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz && \
@@ -30,7 +30,7 @@ FROM base AS build
 COPY . .
 
 RUN go mod download && \
-	CGO_ENABLED=0 go build -o /go/bin/simple-bank
+	CGO_ENABLED=0 go build -o /go/bin/sb
 
 #####################
 ####### PROD ########
@@ -38,6 +38,6 @@ RUN go mod download && \
 
 FROM gcr.io/distroless/static-debian11 AS prod
 
-COPY --from=build /go/bin/simple-bank /
+COPY --from=build /go/bin/sb /
 
-CMD [ "/simple-bank" ]
+CMD [ "/sb" ]
