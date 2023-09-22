@@ -8,7 +8,7 @@ import (
 
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/hibiken/asynq"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 )
 

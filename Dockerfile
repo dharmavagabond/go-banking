@@ -4,7 +4,7 @@
 ####### BASE ######
 ###################
 
-FROM docker.io/golang:1.19.4-buster AS base
+FROM docker.io/golang:1.21-bullseye AS base
 
 WORKDIR /go/src/go-simple-bank
 
@@ -19,7 +19,7 @@ RUN go install github.com/cosmtrek/air@latest && \
 	mkdir migrate-cli && cd migrate-cli && \
 	curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz && \
 	mv migrate /usr/bin && cd .. && rm -rf migrate-cli && \
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.51.2
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.54.2
 
 #####################
 ####### BUILD #######

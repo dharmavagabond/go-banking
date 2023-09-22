@@ -2,7 +2,7 @@ version: "2.4"
 
 services:
     simple-bank:
-        image: localhost/simple-bank:dev
+        image: dharmavagabond/simple-bank:dev
         build:
             context: .
             target: dev

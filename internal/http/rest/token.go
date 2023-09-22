@@ -8,7 +8,7 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var testQueries *Queries

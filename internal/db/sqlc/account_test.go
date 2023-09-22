@@ -7,7 +7,7 @@ import (
 
 	"github.com/Pallinder/go-randomdata"
 	"github.com/dharmavagabond/simple-bank/internal/util"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
 

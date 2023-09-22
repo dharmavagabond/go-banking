@@ -2,20 +2,23 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"sync"
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
 
 type Store interface {
 	Querier
 	TransferTx(context.Context, CreateTransferParams) (TransferTxResult, error)
-	CreateUserTx(context.Context, CreateUserTxParams) (CreateUserTxResult, error)
+	CreateUserTx(
+		context.Context,
+		CreateUserTxParams,
+	) (CreateUserTxResult, error)
 }
 
 type SQLStore struct {
@@ -50,9 +53,7 @@ func NewStore() Store {
 			logger.Fatal("[Err]: ", err)
 		}
 
-		dbconfig.LazyConnect = true
-
-		if dbpool, err = pgxpool.ConnectConfig(context.Background(), dbconfig); err != nil {
+		if dbpool, err = pgxpool.NewWithConfig(context.Background(), dbconfig); err != nil {
 			logger.Fatal("[Err]: ", err)
 		}
 
@@ -69,7 +70,10 @@ func NewStore() Store {
 	return store
 }
 
-func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(
+	ctx context.Context,
+	fn func(*Queries) error,
+) error {
 	var (
 		err error
 		tx  pgx.Tx
@@ -81,7 +85,11 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 
 	if txErr := fn(New(tx)); txErr != nil {
 		if rbErr := tx.Rollback(ctx); rbErr != nil {
-			return fmt.Errorf("[Tx Err]: %v\n[Rollback Err]: %v\n", txErr, rbErr)
+			return fmt.Errorf(
+				"[Tx Err]: %v\n[Rollback Err]: %v\n",
+				txErr,
+				rbErr,
+			)
 		} else {
 			return txErr
 		}
@@ -109,7 +117,7 @@ func (store *SQLStore) TransferTx(
 		if result.FromEntry, err = q.CreateEntry(
 			ctx,
 			CreateEntryParams{
-				AccountID: sql.NullInt64{Int64: arg.FromAccountID, Valid: true},
+				AccountID: pgtype.Int8{Int64: arg.FromAccountID, Valid: true},
 				Amount:    -arg.Amount,
 			},
 		); err != nil {
@@ -119,7 +127,7 @@ func (store *SQLStore) TransferTx(
 		if result.ToEntry, err = q.CreateEntry(
 			ctx,
 			CreateEntryParams{
-				AccountID: sql.NullInt64{Int64: arg.ToAccountID, Valid: true},
+				AccountID: pgtype.Int8{Int64: arg.ToAccountID, Valid: true},
 				Amount:    arg.Amount,
 			},
 		); err != nil {

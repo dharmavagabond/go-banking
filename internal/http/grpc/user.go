@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"time"
 
@@ -14,9 +13,10 @@ import (
 	"github.com/dharmavagabond/simple-bank/internal/valid"
 	"github.com/dharmavagabond/simple-bank/internal/worker"
 	"github.com/hibiken/asynq"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -139,18 +139,18 @@ func (server *Server) LoginUser(
 	mtdt := server.extractMetadata(ctx)
 
 	if session, err = server.store.CreateSession(ctx, db.CreateSessionParams{
-		ID:           refreshTokenPayload.ID,
+		ID:           pgtype.UUID{Bytes: refreshTokenPayload.ID, Valid: true},
 		Username:     req.Username,
 		RefreshToken: refreshToken,
 		UserAgent:    mtdt.UserAgent,
 		ClientIp:     mtdt.ClientIP,
-		ExpiresAt:    refreshTokenPayload.ExpiredAt,
+		ExpiresAt:    pgtype.Timestamptz{Time: refreshTokenPayload.ExpiredAt, Valid: true},
 	}); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	res = &pb.LoginUserResponse{
-		SessionId:             session.ID.String(),
+		SessionId:             string(session.ID.Bytes[:]),
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  timestamppb.New(accessTokenPayload.ExpiredAt),
 		RefreshToken:          refreshToken,
@@ -198,19 +198,19 @@ func (server *Server) UpdateUser(
 
 	arg := db.UpdateUserParams{
 		Username: req.GetUsername(),
-		HashedPassword: sql.NullString{
+		HashedPassword: pgtype.Text{
 			String: hashPassword,
 			Valid:  isPasswordHashed,
 		},
-		FullName: sql.NullString{
+		FullName: pgtype.Text{
 			String: req.GetFullName(),
 			Valid:  len(req.GetFullName()) > 0,
 		},
-		Email: sql.NullString{
+		Email: pgtype.Text{
 			String: req.GetEmail(),
 			Valid:  len(req.GetEmail()) > 0,
 		},
-		PasswordChangedAt: sql.NullTime{
+		PasswordChangedAt: pgtype.Timestamptz{
 			Time:  time.Now(),
 			Valid: isPasswordHashed,
 		},
