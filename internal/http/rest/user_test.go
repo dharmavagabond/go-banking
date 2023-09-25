@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -13,11 +14,11 @@ import (
 
 	"github.com/Pallinder/go-randomdata"
 	"github.com/alexedwards/argon2id"
-	"github.com/dharmavagabond/simple-bank/internal/db/mock"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/mocks"
 	"github.com/dharmavagabond/simple-bank/internal/token"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,14 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				arg := db.CreateUserParams{
@@ -52,9 +60,10 @@ func TestCreateUserAPI(t *testing.T) {
 				store.
 					EXPECT().
 					CreateUser(
-						mock.AnythingOfType("*context.emptyCtx"),
+						mock.AnythingOfType("context.todoCtx"),
 						mock.MatchedBy(func(input db.CreateUserParams) bool {
-							if ok, err := argon2id.ComparePasswordAndHash(password, input.HashedPassword); err != nil || !ok {
+							if ok, err := argon2id.ComparePasswordAndHash(password, input.HashedPassword); err != nil ||
+								!ok {
 								return false
 							}
 
@@ -79,12 +88,19 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					CreateUser(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
+					CreateUser(mock.AnythingOfType("context.todoCtx"), mock.Anything).
 					Once().
 					Return(db.User{}, &pgconn.PgError{})
 			},
@@ -101,17 +117,24 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					CreateUser(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
+					CreateUser(mock.AnythingOfType("context.todoCtx"), mock.Anything).
 					Once().
 					Return(db.User{}, &pgconn.PgError{Code: pgerrcode.UniqueViolation})
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusForbidden, rec.Code)
+				require.Equal(t, http.StatusConflict, rec.Code)
 			},
 		},
 		{
@@ -123,12 +146,19 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					CreateUser(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
+					CreateUser(mock.AnythingOfType("context.todoCtx"), mock.Anything).
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -144,12 +174,19 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     "invalid-email",
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					CreateUser(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
+					CreateUser(mock.AnythingOfType("context.todoCtx"), mock.Anything).
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -165,12 +202,19 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					CreateUser(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
+					CreateUser(mock.AnythingOfType("context.todoCtx"), mock.Anything).
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -191,7 +235,12 @@ func TestCreateUserAPI(t *testing.T) {
 			require.NoError(t, err)
 			body := bytes.NewReader(data)
 			url := "/users"
-			req, err := http.NewRequest(http.MethodPost, url, body)
+			req, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodPost,
+				url,
+				body,
+			)
 			req.Header.Add("Content-Type", "application/json")
 			require.NoError(t, err)
 			tc.setupAuth(t, req, server.tokenMaker)
@@ -203,7 +252,10 @@ func TestCreateUserAPI(t *testing.T) {
 
 func randomUser() (user db.User, password string) {
 	password = randomdata.Alphanumeric(16)
-	hashedPassword, _ := argon2id.CreateHash(randomdata.Alphanumeric(16), argon2id.DefaultParams)
+	hashedPassword, _ := argon2id.CreateHash(
+		randomdata.Alphanumeric(16),
+		argon2id.DefaultParams,
+	)
 	user = db.User{
 		Username:       strings.ToLower(randomdata.SillyName()),
 		HashedPassword: hashedPassword,

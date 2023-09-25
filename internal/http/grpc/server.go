@@ -30,7 +30,7 @@ func (server *Server) Start() error {
 	)
 
 	addr := net.JoinHostPort(config.App.Host, strconv.Itoa(config.App.GrpcPort))
-	grpcLogger := ggrpc.UnaryInterceptor(gRpcLogger)
+	grpcLogger := ggrpc.UnaryInterceptor(gRPCLogger)
 	rpcServer := ggrpc.NewServer(grpcLogger)
 
 	pb.RegisterSimpleBankServer(rpcServer, server)

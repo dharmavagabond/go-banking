@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 )
 
@@ -74,7 +74,7 @@ func (server *Server) getAccount(ectx echo.Context) (err error) {
 	}
 
 	if account, err = server.store.GetAccount(ectx.Request().Context(), req.ID); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
 		}
 
@@ -86,7 +86,7 @@ func (server *Server) getAccount(ectx echo.Context) (err error) {
 	if account.Owner != authPayload.Username {
 		return echo.NewHTTPError(
 			http.StatusUnauthorized,
-			errors.New("The account doesn't belong to the authenticated user"),
+			errors.New("the account doesn't belong to the authenticated user"),
 		)
 	}
 
@@ -116,7 +116,7 @@ func (server *Server) listAccounts(ectx echo.Context) (err error) {
 	}
 
 	if accounts, err = server.store.ListAccounts(ectx.Request().Context(), arg); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
 		}
 

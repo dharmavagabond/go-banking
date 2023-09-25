@@ -1,0 +1,10 @@
+with-expecter: true
+dir: ./internal/mocks
+mockname: "{{.InterfaceName}}"
+filename: "mock_{{.InterfaceName}}.go"
+outpkg: mocks
+
+packages:
+    github.com/dharmavagabond/simple-bank/internal/db/sqlc:
+        interfaces:
+            Store:

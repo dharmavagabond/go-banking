@@ -36,7 +36,7 @@ func init() {
 	}
 }
 
-func gRpcLogger(
+func gRPCLogger(
 	ctx context.Context,
 	req interface{},
 	info *ggrpc.UnaryServerInfo,

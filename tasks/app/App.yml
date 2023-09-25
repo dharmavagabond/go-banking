@@ -1,9 +1,6 @@
 version: "3"
 
 tasks:
-    dev:
-        cmds:
-            - cmd: gowatch
     deploy:
         cmds:
             - podman build -t simple-bank:prod --target=prod .
@@ -14,7 +11,13 @@ tasks:
         env:
             POSTGRES_HOST: "localhost"
         cmds:
-            - cmd: gotestsum -- -count={{.TEST_COUNT | default 0}} ./...
+            - cmd: gotestsum -- -count={{.CLI_ARGS | default 0}} -coverprofile=cover.out ./...
+    coverage:
+       cmds:
+          - cmd: go tool cover -html=cover.out
+    lint:
+        cmds:
+            - cmd: golangci-lint run --config=.golangci.yml --fix --new --issues-exit-code 0 ./...
     evans:
         cmds:
             - cmd: evans --host localhost --port {{.APP_GRPC_PORT}} -r repl

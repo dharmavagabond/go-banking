@@ -11,7 +11,7 @@ tasks:
 
     mock:
         cmds:
-            - mockery --name=Store --with-expecter --recursive --output=./internal/db/mock
+            - cmd: mockery
         silent: true
 
     schema:

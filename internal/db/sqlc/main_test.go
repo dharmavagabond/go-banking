@@ -14,12 +14,17 @@ var testQueries *Queries
 
 func TestMain(m *testing.M) {
 	var (
-		dbpool *pgxpool.Pool
-		err    error
+		dbconfig *pgxpool.Config
+		dbpool   *pgxpool.Pool
+		err      error
 	)
 
-	if dbpool, err = pgxpool.Connect(context.Background(), config.Postgres.DSN); err != nil {
-		log.Fatal("[Err]: ", err)
+	if dbconfig, err = pgxpool.ParseConfig(config.Postgres.DSN); err != nil {
+		log.Fatal(err)
+	}
+
+	if dbpool, err = pgxpool.NewWithConfig(context.Background(), dbconfig); err != nil {
+		log.Fatal(err)
 	}
 
 	testQueries = New(dbpool)

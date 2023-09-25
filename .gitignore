@@ -5,7 +5,7 @@ dbml-error.log
 tmp
 vendor
 doc/*
-internal/db/mock/*
+internal/mocks/*
 internal/pb/*
 
 internal/db/sqlc/db.go
@@ -14,5 +14,5 @@ internal/db/sqlc/querier.go
 internal/db/sqlc/*.sql.go
 
 !doc/db.dbml
-!internal/db/mock/.keep
+!internal/db/mocks/.keep
 !internal/pb/.keep

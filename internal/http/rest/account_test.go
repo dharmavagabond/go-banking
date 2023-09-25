@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,13 +13,13 @@ import (
 	"time"
 
 	"github.com/Pallinder/go-randomdata"
-	"github.com/dharmavagabond/simple-bank/internal/db/mock"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/mocks"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/dharmavagabond/simple-bank/internal/util"
 
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -47,12 +48,19 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "OK",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, account.Owner, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					account.Owner,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("context.todoCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(account, nil)
 			},
@@ -65,12 +73,19 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "UnauthorizedUser",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, "unauthorized_user", time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					"unauthorized_user",
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("context.todoCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(account, nil)
 			},
@@ -86,7 +101,7 @@ func TestGetAccountAPI(t *testing.T) {
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("context.todoCtx"), mock.IsType(account.ID)).
 					Maybe().
 					Times(0)
 			},
@@ -98,12 +113,19 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "NotFound",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("context.todoCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(db.Account{}, pgx.ErrNoRows)
 			},
@@ -115,12 +137,19 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InternalError",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.IsType(account.ID)).
+					GetAccount(mock.AnythingOfType("context.todoCtx"), mock.IsType(account.ID)).
 					Once().
 					Return(db.Account{}, &pgconn.PgError{})
 			},
@@ -132,12 +161,19 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "BadRequest",
 			accountID: 0,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, user.Username, time.Minute)
+				addAuthorization(
+					t,
+					req,
+					tokenMaker,
+					AUTH_TYPE_BEARER,
+					user.Username,
+					time.Minute,
+				)
 			},
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
-					GetAccount(mock.AnythingOfType("*context.emptyCtx"), mock.Anything).
+					GetAccount(mock.AnythingOfType("context.todoCtx"), mock.Anything).
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -154,7 +190,12 @@ func TestGetAccountAPI(t *testing.T) {
 			require.NoError(t, err)
 			rec := httptest.NewRecorder()
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
-			req, err := http.NewRequest(http.MethodGet, url, nil)
+			req, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodGet,
+				url,
+				nil,
+			)
 			require.NoError(t, err)
 			tc.setupAuth(t, req, server.tokenMaker)
 			server.router.ServeHTTP(rec, req)
@@ -163,7 +204,11 @@ func TestGetAccountAPI(t *testing.T) {
 	}
 }
 
-func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, expected db.Account) {
+func requireBodyMatchAccount(
+	t *testing.T,
+	body *bytes.Buffer,
+	expected db.Account,
+) {
 	var account db.Account
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)

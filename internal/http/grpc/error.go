@@ -17,11 +17,12 @@ func invalidArgumentError(violations []*errdetails.BadRequest_FieldViolation) er
 	badRequest := &errdetails.BadRequest{FieldViolations: violations}
 	statusInvalid := status.New(codes.InvalidArgument, "invalid parameters")
 
-	if statusDetails, err := statusInvalid.WithDetails(badRequest); err != nil {
+	statusDetails, err := statusInvalid.WithDetails(badRequest)
+	if err != nil {
 		return statusInvalid.Err()
-	} else {
-		return statusDetails.Err()
 	}
+
+	return statusDetails.Err()
 }
 
 func unauthenticatedError(err error) error {

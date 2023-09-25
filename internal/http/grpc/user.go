@@ -46,7 +46,11 @@ func (server *Server) CreateUser(
 	}
 
 	if hashPassword, err = argon2id.CreateHash(req.GetPassword(), argonParams); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to hash the password: %s", err.Error())
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to hash the password: %s",
+			err.Error(),
+		)
 	}
 
 	arg := db.CreateUserTxParams{
@@ -66,7 +70,10 @@ func (server *Server) CreateUser(
 				asynq.Queue(worker.QueueCritical),
 			}
 
-			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(
+				ctx,
+				taskPayload,
+				opts...)
 		},
 	}
 
@@ -74,8 +81,7 @@ func (server *Server) CreateUser(
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
-			switch pgErr.Code {
-			case pgerrcode.UniqueViolation:
+			if pgErr.Code == pgerrcode.UniqueViolation {
 				return nil, status.Errorf(
 					codes.AlreadyExists,
 					"username already exists: %s",
@@ -84,7 +90,11 @@ func (server *Server) CreateUser(
 			}
 		}
 
-		return nil, status.Errorf(codes.Internal, "failed to create user: %s", err.Error())
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to create user: %s",
+			err.Error(),
+		)
 	}
 
 	res = &pb.CreateUserResponse{
@@ -106,7 +116,7 @@ func (server *Server) LoginUser(
 		accessTokenPayload  *token.Payload
 		refreshToken        string
 		refreshTokenPayload *token.Payload
-		sessionId           driver.Value
+		sessionID           driver.Value
 	)
 
 	if violations := validateLoginUserRequest(req); len(violations) > 0 {
@@ -114,15 +124,23 @@ func (server *Server) LoginUser(
 	}
 
 	if user, err = server.store.GetUser(ctx, req.GetUsername()); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, "user not found")
 		}
 
-		return nil, status.Errorf(codes.Internal, "failed to find user: %s", err.Error())
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to find user: %s",
+			err.Error(),
+		)
 	}
 
 	if ok, err = argon2id.ComparePasswordAndHash(req.Password, user.HashedPassword); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't compare the password: %s", err.Error())
+		return nil, status.Errorf(
+			codes.Internal,
+			"couldn't compare the password: %s",
+			err.Error(),
+		)
 	} else if !ok {
 		return nil, status.Error(codes.Internal, "incorrect password")
 	}
@@ -151,12 +169,12 @@ func (server *Server) LoginUser(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	if sessionId, err = session.ID.Value(); err != nil {
+	if sessionID, err = session.ID.Value(); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	res = &pb.LoginUserResponse{
-		SessionId:             sessionId.(string),
+		SessionId:             sessionID.(string),
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  timestamppb.New(accessTokenPayload.ExpiredAt),
 		RefreshToken:          refreshToken,
@@ -187,7 +205,10 @@ func (server *Server) UpdateUser(
 	}
 
 	if authPayload.Username != req.GetUsername() {
-		return nil, status.Errorf(codes.PermissionDenied, "cannot update other user's info")
+		return nil, status.Errorf(
+			codes.PermissionDenied,
+			"cannot update other user's info",
+		)
 	}
 
 	if len(req.GetPassword()) > 0 {
@@ -224,10 +245,18 @@ func (server *Server) UpdateUser(
 
 	if user, err = server.store.UpdateUser(ctx, arg); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "user not Found: %s", err.Error())
+			return nil, status.Errorf(
+				codes.NotFound,
+				"user not Found: %s",
+				err.Error(),
+			)
 		}
 
-		return nil, status.Errorf(codes.Internal, "failed to update user: %s", err.Error())
+		return nil, status.Errorf(
+			codes.Internal,
+			"failed to update user: %s",
+			err.Error(),
+		)
 	}
 
 	res = &pb.UpdateUserResponse{

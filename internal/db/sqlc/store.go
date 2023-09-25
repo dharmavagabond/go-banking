@@ -84,15 +84,12 @@ func (store *SQLStore) execTx(
 	}
 
 	if txErr := fn(New(tx)); txErr != nil {
-		if rbErr := tx.Rollback(ctx); rbErr != nil {
-			return fmt.Errorf(
-				"[Tx Err]: %v\n[Rollback Err]: %v\n",
-				txErr,
-				rbErr,
-			)
-		} else {
-			return txErr
+		rbErr := tx.Rollback(ctx)
+		if rbErr != nil {
+			return fmt.Errorf("[Tx Err]: %w\n[Rollback Err]: %w", txErr, rbErr)
 		}
+
+		return txErr
 	}
 
 	return tx.Commit(ctx)

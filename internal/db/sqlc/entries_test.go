@@ -2,18 +2,18 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/dharmavagabond/simple-bank/internal/util"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateEntry(t *testing.T) {
 	account, _ := createRandomAccount(nil)
 	arg := CreateEntryParams{
-		AccountID: sql.NullInt64{Int64: account.ID, Valid: true},
+		AccountID: pgtype.Int8{Int64: account.ID, Valid: true},
 		Amount:    util.RandomMoney(),
 	}
 	entry, err := testQueries.CreateEntry(context.Background(), arg)
@@ -30,7 +30,7 @@ func TestCreateEntry(t *testing.T) {
 func TestGetEntry(t *testing.T) {
 	account, _ := createRandomAccount(nil)
 	arg := CreateEntryParams{
-		AccountID: sql.NullInt64{Int64: account.ID, Valid: true},
+		AccountID: pgtype.Int8{Int64: account.ID, Valid: true},
 		Amount:    util.RandomMoney(),
 	}
 	entry, _ := testQueries.CreateEntry(context.Background(), arg)
@@ -40,7 +40,7 @@ func TestGetEntry(t *testing.T) {
 	require.Equal(t, entry.ID, entry2.ID)
 	require.Equal(t, entry.AccountID, entry2.AccountID)
 	require.Equal(t, entry.Amount, entry2.Amount)
-	require.WithinDuration(t, entry.CreatedAt, entry2.CreatedAt, time.Second)
+	require.WithinDuration(t, entry.CreatedAt.Time, entry2.CreatedAt.Time, time.Second)
 }
 
 func TestListEntries(t *testing.T) {
@@ -50,14 +50,14 @@ func TestListEntries(t *testing.T) {
 		_, _ = testQueries.CreateEntry(
 			context.Background(),
 			CreateEntryParams{
-				AccountID: sql.NullInt64{Int64: account.ID, Valid: true},
+				AccountID: pgtype.Int8{Int64: account.ID, Valid: true},
 				Amount:    util.RandomMoney(),
 			},
 		)
 	}
 
 	arg := ListEntriesParams{
-		AccountID: sql.NullInt64{Int64: account.ID, Valid: true},
+		AccountID: pgtype.Int8{Int64: account.ID, Valid: true},
 		Limit:     5,
 		Offset:    5,
 	}

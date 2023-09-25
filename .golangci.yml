@@ -391,8 +391,8 @@ linters:
       tagliatelle:
         case:
           rules:
-            json: snake # why it's not a `snake` by default?!
-            yaml: snake # why it's not a `snake` by default?!
+            json: snake
+            yaml: snake
             xml: camel
             bson: camel
             avro: snake

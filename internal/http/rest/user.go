@@ -7,21 +7,22 @@ import (
 
 	"github.com/alexedwards/argon2id"
 	"github.com/dharmavagabond/simple-bank/internal/config"
-	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
 type (
 	createUserRequest struct {
-		Username string `json:"username" validate:"required,alphanum"`
-		Password string `json:"password" validate:"required,min=10"`
+		Username string `json:"username"  validate:"required,alphanum"`
+		Password string `json:"password"  validate:"required,min=10"`
 		FullName string `json:"full_name" validate:"required"`
-		Email    string `json:"email" validate:"required,email"`
+		Email    string `json:"email"     validate:"required,email"`
 	}
 	userResponse struct {
 		Username          string    `json:"username"`
@@ -57,8 +58,8 @@ func newUserResponse(user db.User) userResponse {
 		Username:          user.Username,
 		FullName:          user.FullName,
 		Email:             user.Email,
-		PasswordChangedAt: user.PasswordChangedAt,
-		CreatedAt:         user.CreatedAt,
+		PasswordChangedAt: user.PasswordChangedAt.Time,
+		CreatedAt:         user.CreatedAt.Time,
 	}
 }
 
@@ -92,9 +93,8 @@ func (server *Server) createUser(ectx echo.Context) (err error) {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
-			switch pgErr.Code {
-			case pgerrcode.UniqueViolation:
-				return echo.NewHTTPError(http.StatusForbidden, err.Error())
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return echo.NewHTTPError(http.StatusConflict, err.Error())
 			}
 		}
 
@@ -125,7 +125,7 @@ func (server *Server) loginUser(ectx echo.Context) (err error) {
 	}
 
 	if user, err = server.store.GetUser(ectx.Request().Context(), req.Username); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
 		}
 
@@ -150,18 +150,23 @@ func (server *Server) loginUser(ectx echo.Context) (err error) {
 	}
 
 	if session, err = server.store.CreateSession(ectx.Request().Context(), db.CreateSessionParams{
-		ID:           refreshTokenPayload.ID,
+		ID:           pgtype.UUID{Bytes: refreshTokenPayload.ID, Valid: true},
 		Username:     req.Username,
 		RefreshToken: refreshToken,
 		UserAgent:    ectx.Request().UserAgent(),
 		ClientIp:     ectx.RealIP(),
-		ExpiresAt:    refreshTokenPayload.ExpiredAt,
+		ExpiresAt:    pgtype.Timestamptz{Time: refreshTokenPayload.ExpiredAt, Valid: true},
 	}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	sessionID, err := uuid.FromBytes(session.ID.Bytes[:])
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
 	res := loginUserResponse{
-		SessionID:             session.ID,
+		SessionID:             sessionID,
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
 		RefreshToken:          refreshToken,

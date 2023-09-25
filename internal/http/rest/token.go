@@ -9,6 +9,7 @@ import (
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
@@ -43,7 +44,9 @@ func (server *Server) renewAccessToken(ectx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
-	if session, err = server.store.GetSession(ectx.Request().Context(), refreshTokenPayload.ID); err != nil {
+	id := pgtype.UUID{Bytes: refreshTokenPayload.ID, Valid: true}
+
+	if session, err = server.store.GetSession(ectx.Request().Context(), id); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
 		}
@@ -63,7 +66,7 @@ func (server *Server) renewAccessToken(ectx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusUnauthorized, errors.New("Incorrect session user"))
 	}
 
-	if time.Now().After(session.ExpiresAt) {
+	if time.Now().After(session.ExpiresAt.Time) {
 		return echo.NewHTTPError(http.StatusUnauthorized, errors.New("Expired session"))
 	}
 
