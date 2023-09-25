@@ -42,6 +42,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -75,6 +76,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Return(user, nil)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusOK, rec.Code)
 				requireBodyMatchUser(t, rec.Body, user)
 			},
@@ -88,6 +90,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -105,6 +108,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Return(db.User{}, &pgconn.PgError{})
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusInternalServerError, rec.Code)
 			},
 		},
@@ -117,6 +121,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -134,6 +139,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Return(db.User{}, &pgconn.PgError{Code: pgerrcode.UniqueViolation})
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusConflict, rec.Code)
 			},
 		},
@@ -146,6 +152,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -162,6 +169,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 			},
 		},
@@ -174,6 +182,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     "invalid-email",
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -190,6 +199,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 			},
 		},
@@ -202,6 +212,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 			},
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -218,6 +229,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 			},
 		},
@@ -266,6 +278,7 @@ func randomUser() (user db.User, password string) {
 }
 
 func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
+	t.Helper()
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 	var gotUser db.User

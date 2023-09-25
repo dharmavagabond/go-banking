@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,6 +29,7 @@ func addAuthorization(
 	username string,
 	duration time.Duration,
 ) {
+	t.Helper()
 	token, _, err := tokenMaker.CreateToken(username, duration)
 	require.NoError(t, err)
 
@@ -44,18 +46,20 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "OK",
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				username := "erosennin"
 				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, username, time.Minute)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusOK, rec.Code)
 			},
 		},
 		{
-			name: "NoAuthorization",
-			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-			},
+			name:      "NoAuthorization",
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {}, //nolint: thelper
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 				checkErrorMessage(t, rec.Body, "missing key in request header")
 			},
@@ -63,10 +67,12 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "UnsupportedAuthorization",
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				username := "erosennin"
 				addAuthorization(t, req, tokenMaker, "Token", username, time.Minute)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 				checkErrorMessage(t, rec.Body, "invalid key in the request header")
 			},
@@ -74,10 +80,12 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "InvalidAuthorization",
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				username := "erosennin"
 				addAuthorization(t, req, tokenMaker, "", username, time.Minute)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 				checkErrorMessage(t, rec.Body, "invalid key in the request header")
 			},
@@ -85,10 +93,12 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "ExpiredToken",
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				username := "erosennin"
 				addAuthorization(t, req, tokenMaker, AUTH_TYPE_BEARER, username, -time.Minute)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusUnauthorized, rec.Code)
 			},
 		},
@@ -108,7 +118,7 @@ func TestAuthMiddleware(t *testing.T) {
 				authMiddleware,
 			)
 			rec := httptest.NewRecorder()
-			req, err := http.NewRequest(http.MethodPost, authPath, nil)
+			req, err := http.NewRequestWithContext(context.TODO(), http.MethodPost, authPath, nil)
 			req.Header.Add("Content-Type", "application/json")
 			require.NoError(t, err)
 			tc.setupAuth(t, req, server.tokenMaker)
@@ -119,6 +129,7 @@ func TestAuthMiddleware(t *testing.T) {
 }
 
 func checkErrorMessage(t *testing.T, body *bytes.Buffer, message string) {
+	t.Helper()
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 	var errorBody AuthErrorBody

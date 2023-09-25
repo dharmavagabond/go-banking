@@ -48,6 +48,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "OK",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -65,6 +66,7 @@ func TestGetAccountAPI(t *testing.T) {
 					Return(account, nil)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				requireBodyMatchAccount(t, rec.Body, account)
 				require.Equal(t, http.StatusOK, rec.Code)
 			},
@@ -73,6 +75,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "UnauthorizedUser",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -90,14 +93,14 @@ func TestGetAccountAPI(t *testing.T) {
 					Return(account, nil)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusUnauthorized, rec.Code)
 			},
 		},
 		{
 			name:      "NoAuthorization",
 			accountID: account.ID,
-			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
-			},
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {}, //nolint: thelper
 			buildStubs: func(store *mocks.Store) {
 				store.
 					EXPECT().
@@ -106,6 +109,7 @@ func TestGetAccountAPI(t *testing.T) {
 					Times(0)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 			},
 		},
@@ -113,6 +117,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "NotFound",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -130,6 +135,7 @@ func TestGetAccountAPI(t *testing.T) {
 					Return(db.Account{}, pgx.ErrNoRows)
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusNotFound, rec.Code)
 			},
 		},
@@ -137,6 +143,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InternalError",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -154,6 +161,7 @@ func TestGetAccountAPI(t *testing.T) {
 					Return(db.Account{}, &pgconn.PgError{})
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusInternalServerError, rec.Code)
 			},
 		},
@@ -161,6 +169,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "BadRequest",
 			accountID: 0,
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				t.Helper()
 				addAuthorization(
 					t,
 					req,
@@ -177,6 +186,7 @@ func TestGetAccountAPI(t *testing.T) {
 					Maybe()
 			},
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				t.Helper()
 				require.Equal(t, http.StatusBadRequest, rec.Code)
 			},
 		},
@@ -209,6 +219,7 @@ func requireBodyMatchAccount(
 	body *bytes.Buffer,
 	expected db.Account,
 ) {
+	t.Helper()
 	var account db.Account
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
