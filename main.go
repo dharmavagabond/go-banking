@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"time"
 
 	_ "github.com/dharmavagabond/simple-bank/doc/statik"
 	"github.com/dharmavagabond/simple-bank/internal/config"
@@ -33,7 +34,7 @@ func main() {
 
 	eg.Go(func() (err error) {
 		if err = runGatewayServer(store, taskDistributor); err != nil {
-			err = fmt.Errorf("Gateway Server: %w", err)
+			err = fmt.Errorf("gateway server: %w", err)
 		}
 
 		return err
@@ -58,7 +59,10 @@ func main() {
 	}
 }
 
-func runGrpcServer(store db.Store, taskDistributor worker.TaskDistributor) error {
+func runGrpcServer(
+	store db.Store,
+	taskDistributor worker.TaskDistributor,
+) error {
 	var (
 		server *grpc.Server
 		err    error
@@ -71,23 +75,28 @@ func runGrpcServer(store db.Store, taskDistributor worker.TaskDistributor) error
 	return server.Start()
 }
 
-func runGatewayServer(store db.Store, taskDistributor worker.TaskDistributor) error {
+func runGatewayServer(
+	store db.Store,
+	taskDistributor worker.TaskDistributor,
+) error {
 	var (
 		server   *grpc.Server
 		statikFs http.FileSystem
-		listener net.Listener
 		err      error
 	)
 
 	addr := net.JoinHostPort(config.App.Host, strconv.Itoa(config.App.HttpPort))
-	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-		MarshalOptions: protojson.MarshalOptions{
-			UseProtoNames: true,
+	jsonOption := runtime.WithMarshalerOption(
+		runtime.MIMEWildcard,
+		&runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
 		},
-		UnmarshalOptions: protojson.UnmarshalOptions{
-			DiscardUnknown: true,
-		},
-	})
+	)
 	grpcMux := runtime.NewServeMux(jsonOption)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -111,22 +120,20 @@ func runGatewayServer(store db.Store, taskDistributor worker.TaskDistributor) er
 	mux.Handle("/", grpcMux)
 	mux.Handle("/swagger/", swaggerHandler)
 
-	if listener, err = net.Listen("tcp", addr); err != nil {
-		return err
+	srv := &http.Server{
+		Handler:      grpc.HttpLogger(mux),
+		Addr:         addr,
+		ReadTimeout:  time.Second * 5,
+		WriteTimeout: time.Second * 10,
 	}
 
-	log.Info().Msgf("Listening HTTP gateway at %s", listener.Addr().String())
+	log.Info().Msgf("Listening HTTP gateway at %s", srv.Addr)
 
-	return http.Serve(listener, grpc.HttpLogger(mux))
+	return srv.ListenAndServe()
 }
 
 func runTaskProcessor(store db.Store) error {
 	proc := worker.NewRedisTaskProcessor(store)
 	log.Info().Msg("start task processor")
-
-	if err := proc.Start(); err != nil {
-		return err
-	}
-
-	return nil
+	return proc.Start()
 }
