@@ -8,18 +8,19 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/dharmavagabond/simple-bank/doc/statik"
-	"github.com/dharmavagabond/simple-bank/internal/config"
-	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/http/grpc"
-	"github.com/dharmavagabond/simple-bank/internal/pb"
-	"github.com/dharmavagabond/simple-bank/internal/worker"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/encoding/protojson"
+
+	_ "github.com/dharmavagabond/simple-bank/doc/statik"
+	"github.com/dharmavagabond/simple-bank/internal/config"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/http/grpc"
+	"github.com/dharmavagabond/simple-bank/internal/pb"
+	"github.com/dharmavagabond/simple-bank/internal/worker"
 )
 
 func init() {
@@ -121,7 +122,7 @@ func runGatewayServer(
 	mux.Handle("/swagger/", swaggerHandler)
 
 	srv := &http.Server{
-		Handler:      grpc.HttpLogger(mux),
+		Handler:      grpc.HTTPLogger(mux),
 		Addr:         addr,
 		ReadTimeout:  time.Second * 5,
 		WriteTimeout: time.Second * 10,

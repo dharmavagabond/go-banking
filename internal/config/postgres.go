@@ -12,9 +12,9 @@ type PostgresConfig = struct {
 	Password string `env:"PASSWORD"`
 	DB       string `env:"DB"       default:"simple-bank"`
 	Host     string `env:"HOST"     default:"localhost"`
-	Port     int    `env:"PORT"     default:"5432"`
 	DSN      string `               default:"dsn"`
 	SSLMode  string `env:"SSLMODE"  default:"disable"`
+	Port     int    `env:"PORT"     default:"5432"`
 }
 
 var Postgres PostgresConfig

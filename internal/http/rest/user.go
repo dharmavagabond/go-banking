@@ -6,15 +6,16 @@ import (
 	"time"
 
 	"github.com/alexedwards/argon2id"
-	"github.com/dharmavagabond/simple-bank/internal/config"
-	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
+
+	"github.com/dharmavagabond/simple-bank/internal/config"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/token"
 )
 
 type (
@@ -25,23 +26,23 @@ type (
 		Email    string `json:"email"     validate:"required,email"`
 	}
 	userResponse struct {
+		PasswordChangedAt time.Time `json:"password_changed_at"`
+		CreatedAt         time.Time `json:"created_at"`
 		Username          string    `json:"username"`
 		FullName          string    `json:"full_name"`
 		Email             string    `json:"email"`
-		PasswordChangedAt time.Time `json:"password_changed_at"`
-		CreatedAt         time.Time `json:"created_at"`
 	}
 	loginUserRequest struct {
 		Username string `json:"username" validate:"required,alphanum"`
 		Password string `json:"password" validate:"required,min=10"`
 	}
 	loginUserResponse struct {
-		SessionID             uuid.UUID    `json:"session_id"`
-		AccessToken           string       `json:"access_token"`
-		AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
-		RefreshToken          string       `json:"refresh_token"`
-		RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
 		User                  userResponse `json:"user"`
+		AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+		RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
+		AccessToken           string       `json:"access_token"`
+		RefreshToken          string       `json:"refresh_token"`
+		SessionID             uuid.UUID    `json:"session_id"`
 	}
 )
 

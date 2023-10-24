@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dharmavagabond/simple-bank/internal/config"
-	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
+
+	"github.com/dharmavagabond/simple-bank/internal/config"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/token"
 )
 
 type (
@@ -18,8 +19,8 @@ type (
 		RefreshToken string `json:"refresh_token" validate:"required"`
 	}
 	renewAccessTokenResponse struct {
-		AccessToken          string    `json:"access_token"`
 		AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
+		AccessToken          string    `json:"access_token"`
 	}
 )
 

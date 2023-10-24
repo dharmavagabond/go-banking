@@ -1,10 +1,12 @@
 package db
 
-import "context"
+import (
+	"context"
+)
 
 type CreateUserTxParams struct {
-	CreateUserParams
 	AfterCreate func(user User) error
+	CreateUserParams
 }
 
 type CreateUserTxResult struct {

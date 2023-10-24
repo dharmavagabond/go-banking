@@ -8,15 +8,15 @@ import (
 )
 
 type AppConfig = struct {
-	Host                 string        `default:"localhost" env:"HOST"`
-	HTTPPort             int           `default:"8080" env:"HTTP_PORT"`
-	GrpcPort             int           `default:"9090" env:"GRPC_PORT"`
+	Host                 string        `default:"localhost"  env:"HOST"`
 	Env                  string        `default:"production" env:"ENV"`
+	Secret               string        `                     env:"SECRET"`
+	TokenSymmetricKey    string        `                     env:"TOKEN_SYMMETRIC_KEY"`
+	HTTPPort             int           `default:"8080"       env:"HTTP_PORT"`
+	GrpcPort             int           `default:"9090"       env:"GRPC_PORT"`
+	AccessTokenDuration  time.Duration `default:"15m"        env:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration time.Duration `default:"24h"        env:"REFRESH_TOKEN_DURATION"`
 	IsDev                bool          `default:"false"`
-	Secret               string        `env:"SECRET"`
-	TokenSymmetricKey    string        `env:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration  time.Duration `default:"15m" env:"ACCESS_TOKEN_DURATION"`
-	RefreshTokenDuration time.Duration `default:"24h" env:"REFRESH_TOKEN_DURATION"`
 }
 
 var App AppConfig

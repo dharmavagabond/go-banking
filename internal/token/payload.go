@@ -7,10 +7,10 @@ import (
 )
 
 type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"iat"`
 	ExpiredAt time.Time `json:"exp"`
+	Username  string    `json:"username"`
+	ID        uuid.UUID `json:"id"`
 }
 
 func (payload *Payload) Valid() error {

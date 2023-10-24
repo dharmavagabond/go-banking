@@ -6,18 +6,19 @@ import (
 	"os"
 	"time"
 
-	"github.com/dharmavagabond/simple-bank/internal/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/dharmavagabond/simple-bank/internal/config"
 )
 
 type ResponseRecorder struct {
 	http.ResponseWriter
-	StatusCode int
 	Body       []byte
+	StatusCode int
 }
 
 func (rec *ResponseRecorder) WriteHeader(statusCode int) {
@@ -74,7 +75,7 @@ func gRPCLogger(
 	return res, err
 }
 
-func HttpLogger(handler http.Handler) http.Handler {
+func HTTPLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var logger *zerolog.Event
 
