@@ -1,14 +1,13 @@
 package rest
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strconv"
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
-	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -35,7 +34,7 @@ func (cv *customValidator) Validate(i interface{}) error {
 }
 
 func (server *Server) Start() error {
-	address := net.JoinHostPort("", strconv.Itoa(config.App.HttpPort))
+	address := net.JoinHostPort("", strconv.Itoa(config.App.HTTPPort))
 	return server.router.Start(address)
 }
 
@@ -45,7 +44,7 @@ func NewServer(store db.Store) (server *Server, err error) {
 	router := echo.New()
 
 	if tokenMaker, err = token.NewPasetoMaker(config.App.TokenSymmetricKey); err != nil {
-		return nil, errors.New(fmt.Sprintf("%v: %v", token.ERR_CANT_CREATE_TOKEN_MAKER, err))
+		return nil, fmt.Errorf("%w: %w", token.ERR_CANT_CREATE_TOKEN_MAKER, err)
 	}
 
 	server = &Server{

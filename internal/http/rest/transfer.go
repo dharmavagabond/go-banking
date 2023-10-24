@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
@@ -15,9 +15,9 @@ import (
 type (
 	transferRequest struct {
 		FromAccountID int64  `json:"from_account_id" validate:"required,min=1"`
-		ToAccountID   int64  `json:"to_account_id" validate:"required,min=1"`
-		Amount        int64  `json:"amount" validate:"required,gt=0"`
-		Currency      string `json:"currency" validate:"required,currency"`
+		ToAccountID   int64  `json:"to_account_id"   validate:"required,min=1"`
+		Amount        int64  `json:"amount"          validate:"required,gt=0"`
+		Currency      string `json:"currency"        validate:"required,currency"`
 	}
 )
 
@@ -72,7 +72,11 @@ func (server *Server) createTransfer(ectx echo.Context) (err error) {
 	return ectx.JSON(http.StatusOK, result)
 }
 
-func getAccount(accountID int64, store db.Store, ctx context.Context) (account db.Account, err error) {
+func getAccount(
+	accountID int64,
+	store db.Store,
+	ctx context.Context,
+) (account db.Account, err error) {
 	if account, err = store.GetAccount(ctx, accountID); err != nil {
 		if err == pgx.ErrNoRows {
 			err = echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -84,11 +88,19 @@ func getAccount(accountID int64, store db.Store, ctx context.Context) (account d
 	return
 }
 
-func (server *Server) isSameCurrency(account db.Account, currency string) (isOk bool, err error) {
+func (server *Server) isSameCurrency(
+	account db.Account,
+	currency string,
+) (isOk bool, err error) {
 	if account.Currency != currency {
 		err = echo.NewHTTPError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency),
+			fmt.Sprintf(
+				"account [%d] currency mismatch: %s vs %s",
+				account.ID,
+				account.Currency,
+				currency,
+			),
 		)
 
 		return

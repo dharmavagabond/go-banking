@@ -85,7 +85,7 @@ func runGatewayServer(
 		err      error
 	)
 
-	addr := net.JoinHostPort(config.App.Host, strconv.Itoa(config.App.HttpPort))
+	addr := net.JoinHostPort(config.App.Host, strconv.Itoa(config.App.HTTPPort))
 	jsonOption := runtime.WithMarshalerOption(
 		runtime.MIMEWildcard,
 		&runtime.JSONPb{

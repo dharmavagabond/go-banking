@@ -10,11 +10,11 @@ import (
 type PostgresConfig = struct {
 	User     string `env:"USER"`
 	Password string `env:"PASSWORD"`
-	Db       string `default:"simple-bank" env:"DB"`
-	Host     string `default:"localhost" env:"HOST"`
-	Port     int    `default:"5432" env:"PORT"`
-	DSN      string `default:"dsn"`
-	SSLMode  string `default:"disable" env:"SSLMODE"`
+	DB       string `env:"DB"       default:"simple-bank"`
+	Host     string `env:"HOST"     default:"localhost"`
+	Port     int    `env:"PORT"     default:"5432"`
+	DSN      string `               default:"dsn"`
+	SSLMode  string `env:"SSLMODE"  default:"disable"`
 }
 
 var Postgres PostgresConfig
@@ -34,7 +34,7 @@ func init() {
 		Postgres.Password,
 		Postgres.Host,
 		Postgres.Port,
-		Postgres.Db,
+		Postgres.DB,
 		Postgres.SSLMode,
 	)
 }
