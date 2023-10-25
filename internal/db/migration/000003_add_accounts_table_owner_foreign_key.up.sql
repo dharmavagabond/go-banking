@@ -1,3 +1,3 @@
-ALTER TABLE "accounts"
-    ADD FOREIGN KEY ("owner") REFERENCES "users" ("username");
-
+alter table "accounts"
+add foreign key ("owner") references "users" ("username")
+;

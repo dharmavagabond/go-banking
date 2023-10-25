@@ -1,11 +1,11 @@
-CREATE TABLE "sessions" (
-    "id" uuid PRIMARY KEY,
-    "username" varchar REFERENCES users (username) NOT NULL,
-    "refresh_token" varchar NOT NULL,
-    "user_agent" varchar NOT NULL,
-    "client_ip" varchar NOT NULL,
-    "is_blocked" boolean NOT NULL DEFAULT FALSE,
-    "expires_at" timestamptz NOT NULL,
-    "created_at" timestamptz NOT NULL DEFAULT 'now()'
-);
-
+create table "sessions" (
+    "id" uuid primary key,
+    "username" varchar references users (username) not null,
+    "refresh_token" varchar not null,
+    "user_agent" varchar not null,
+    "client_ip" varchar not null,
+    "is_blocked" boolean not null default false,
+    "expires_at" timestamptz not null,
+    "created_at" timestamptz not null default 'now()'
+)
+;

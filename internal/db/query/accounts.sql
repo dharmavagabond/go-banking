@@ -1,60 +1,48 @@
 -- name: CreateAccount :one
-INSERT INTO accounts (OWNER, balance, currency)
-    VALUES ($1, $2, $3)
-RETURNING
-    *;
+insert into accounts (owner, balance, currency)
+values ($1, $2, $3)
+returning *
+;
 
 -- name: GetAccount :one
-SELECT
-    *
-FROM
-    accounts
-WHERE
-    id = $1
-LIMIT 1;
+select id, owner, balance, currency
+from accounts
+where id = $1
+limit 1
+;
 
 -- name: GetAccountForUpdate :one
-SELECT
-    *
-FROM
-    accounts
-WHERE
-    id = $1
-LIMIT 1
-FOR NO KEY UPDATE;
+select id, owner, balance, currency
+from accounts
+where id = $1
+limit 1
+for no key update
+;
 
 -- name: ListAccounts :many
-SELECT
-    *
-FROM
-    accounts
-WHERE
-    OWNER = $1
-ORDER BY
-    id
-LIMIT $2 OFFSET $3;
+select id, owner, balance, currency
+from accounts
+where owner = $1
+order by id
+limit $2
+offset $3
+;
 
 -- name: UpdateAccount :one
-UPDATE
-    accounts
-SET
-    balance = $2
-WHERE
-    id = $1
-RETURNING
-    *;
+update accounts
+set balance = $2
+where id = $1
+returning *
+;
 
 -- name: AddAccountBalance :one
-UPDATE
-    accounts
-SET
-    balance = balance + @amount_to_transfer
-WHERE
-    id = @id
-RETURNING
-    *;
+update accounts
+set balance = balance + @amount_to_transfer
+where id = @id
+returning *
+;
 
 -- name: DeleteAccount :exec
-DELETE FROM accounts
-WHERE id = $1;
-
+delete from accounts
+where id = $1
+;

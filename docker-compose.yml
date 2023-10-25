@@ -1,43 +1,44 @@
-version: "2.4"
+---
+version: '2.4'
 
 services:
-    simple-bank:
-        image: dharmavagabond/simple-bank:dev
-        build:
-            context: .
-            target: dev
-        init: true
-        ports:
-            - ${APP_HTTP_PORT}:${APP_HTTP_PORT}
-            - ${APP_GRPC_PORT}:${APP_GRPC_PORT}
-        env_file: .env
-        volumes:
-            - ./:/go/src/go-simple-bank:cached
-        depends_on:
-            postgres-db:
-                condition: service_started
-        entrypoint: ./scripts/entrypoint.sh
-        command: arelo -p '**/*.go' -i scripts -i proto -i tasks -i doc -i tools -- sh ./scripts/run-app.sh
+  simple-bank:
+    image: dharmavagabond/simple-bank:dev
+    build:
+      context: .
+      target: dev
+    init: true
+    ports:
+      - ${APP_HTTP_PORT}:${APP_HTTP_PORT}
+      - ${APP_GRPC_PORT}:${APP_GRPC_PORT}
+    env_file: .env
+    volumes:
+      - ./:/go/src/go-simple-bank:cached
+    depends_on:
+      postgres-db:
+        condition: service_started
+    entrypoint: ./scripts/entrypoint.sh
+    command: arelo -p '**/*.go' -i scripts -i proto -i tasks -i doc -i tools -- sh
+      ./scripts/run-app.sh
 
+  postgres-db:
+    image: docker.io/postgres:15-alpine
+    init: true
+    restart: always
+    volumes:
+      - database-data:/var/lib/postgresql/data/:delegated
+    env_file: .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
 
-    postgres-db:
-        image: docker.io/postgres:15-alpine
-        init: true
-        restart: "always"
-        volumes:
-            - database-data:/var/lib/postgresql/data/:delegated
-        env_file: .env
-        ports:
-            - ${POSTGRES_PORT}:${POSTGRES_PORT}
-
-    redis-server:
-        image: redis:7-alpine
-        init: true
-        restart: always
-        sysctls:
-            - net.core.somaxconn=1024
-        env_file:
-            - .env
+  redis-server:
+    image: redis:7-alpine
+    init: true
+    restart: always
+    sysctls:
+      - net.core.somaxconn=1024
+    env_file:
+      - .env
 
 volumes:
-    database-data:
+  database-data:

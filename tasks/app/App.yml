@@ -1,23 +1,27 @@
-version: "3"
+---
+version: '3'
 
 tasks:
-    deploy:
-        cmds:
-            - podman build -t simple-bank:prod --target=prod .
-            - podman tag simple-bank:prod 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
-            - aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin 904004324775.dkr.ecr.us-east-1.amazonaws.com
-            - podman push 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
-    test:
-        env:
-            POSTGRES_HOST: "localhost"
-        cmds:
-            - cmd: gotestsum -- -count={{.CLI_ARGS | default 0}} -coverprofile=cover.out ./...
-    coverage:
-       cmds:
-          - cmd: go tool cover -html=cover.out
-    lint:
-        cmds:
-            - cmd: golangci-lint run --config=.golangci.yml --fix --new --issues-exit-code 0 ./...
-    evans:
-        cmds:
-            - cmd: evans --host localhost --port {{.APP_GRPC_PORT}} -r repl
+  deploy:
+    cmds:
+      - podman build -t simple-bank:prod --target=prod .
+      - podman tag simple-bank:prod 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
+      - aws ecr get-login-password --region us-east-1 | podman login --username AWS
+        --password-stdin 904004324775.dkr.ecr.us-east-1.amazonaws.com
+      - podman push 904004324775.dkr.ecr.us-east-1.amazonaws.com/simple-bank:latest
+  test:
+    env:
+      POSTGRES_HOST: localhost
+    cmds:
+      - cmd: gotestsum -- -count={{.CLI_ARGS | default 0}} -coverprofile=cover.out
+          ./...
+  coverage:
+    cmds:
+      - cmd: go tool cover -html=cover.out
+  lint:
+    cmds:
+      - cmd: golangci-lint run --config=.golangci.yml --fix --new --issues-exit-code
+          0 ./...
+  evans:
+    cmds:
+      - cmd: evans --host localhost --port {{.APP_GRPC_PORT}} -r repl

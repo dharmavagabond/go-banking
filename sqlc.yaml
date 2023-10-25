@@ -1,4 +1,6 @@
-version: "2"
+---
+version: '2'
+
 sql:
   - schema: ./internal/db/migration
     queries: ./internal/db/query

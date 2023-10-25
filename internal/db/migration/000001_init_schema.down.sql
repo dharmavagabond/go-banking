@@ -1,6 +1,5 @@
-DROP TABLE IF EXISTS entries;
+drop table if exists entries;
 
-DROP TABLE IF EXISTS transfers;
+drop table if exists transfers;
 
-DROP TABLE IF EXISTS accounts;
-
+drop table if exists accounts;

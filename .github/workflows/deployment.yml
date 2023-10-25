@@ -1,40 +1,41 @@
+---
 name: simple-bank-deployment
 
 on:
-    push:
-        tags:
-            - v[0-9]+.[0-9]+.[0-9]+
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
 
 jobs:
-    build:
-        if: startsWith(github.ref, 'refs/tags/v')
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository code
-              uses: actions/checkout@v3
+  build:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
 
-            - name: Install SQLC
-              run: |
-                  curl -sfL https://github.com/kyleconroy/sqlc/releases/download/v1.16.0/sqlc_1.16.0_linux_amd64.tar.gz | tar -xvz
-                  mv sqlc /usr/local/bin
+      - name: Install SQLC
+        run: |
+          curl -sfL https://github.com/kyleconroy/sqlc/releases/download/v1.16.0/sqlc_1.16.0_linux_amd64.tar.gz | tar -xvz
+          mv sqlc /usr/local/bin
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v1
-              with:
-                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  aws-region: us-east-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-            - name: Login to Amazon ECR
-              id: login-ecr
-              uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-            - name: Build, tag, and push OCI to Amazon ECR
-              env:
-                  REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-                  REPOSITORY: simple-bank
-                  IMAGE_TAG: ${{ github.sha }}
-              run: |
-                  sqlc generate
-                  docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG --target prod --compress -f Containerfile .
-                  docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      - name: Build, tag, and push OCI to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: simple-bank
+          IMAGE_TAG: ${{ github.sha }}
+        run: |-
+          sqlc generate
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG --target prod --compress -f Containerfile .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

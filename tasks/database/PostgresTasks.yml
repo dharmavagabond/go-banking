@@ -1,19 +1,21 @@
-version: "3"
+---
+version: '3'
 
 tasks:
-    create:
-        cmds:
-            - cmd: podman exec -it postgres-db createdb --username=dharma --owner=dharma simple-bank
+  create:
+    cmds:
+      - cmd: podman exec -it postgres-db createdb --username=dharma --owner=dharma
+          simple-bank
 
-    psql:
-        cmds:
-            - cmd: podman exec -it postgres-db psql --username=dharma simple-bank
+  psql:
+    cmds:
+      - cmd: podman exec -it postgres-db psql --username=dharma simple-bank
 
-    mock:
-        cmds:
-            - cmd: mockery
-        silent: true
+  mock:
+    cmds:
+      - cmd: mockery
+    silent: true
 
-    schema:
-        cmds:
-            - cmd: dbml2sql --postgres -o doc/schema.sql doc/db.dbml
+  schema:
+    cmds:
+      - cmd: dbml2sql --postgres -o doc/schema.sql doc/db.dbml

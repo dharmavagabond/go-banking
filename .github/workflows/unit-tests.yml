@@ -1,80 +1,82 @@
+---
 name: simple-bank-unit-tests
 
 on:
-    pull_request:
-        branches: ["main"]
+  pull_request:
+    branches:
+      - main
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        services:
-            postgres:
-                image: postgres:15-alpine
-                env:
-                    POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-                    POSTGRES_DB: simple-bank
-                options: >-
-                    --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-                ports:
-                    - 5432:5432
-        steps:
-            - name: Checkout project
-              uses: actions/checkout@v3
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: simple-bank
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
 
-            - name: Setup Go
-              uses: actions/setup-go@v3
-              with:
-                  go-version-file: ./go.mod
-                  cache: true
-                  cache-dependency-path: ./go.sum
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: ./go.mod
+          cache: true
+          cache-dependency-path: ./go.sum
 
-            - name: Install gotestsum
-              run: go install gotest.tools/gotestsum@latest
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
 
-            - name: Install SQLC
-              run: go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+      - name: Install SQLC
+        run: go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
 
-            - name: Install migrate
-              run: |
-                  curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
-                  sudo mv migrate /usr/bin
+      - name: Install migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin
 
-            - name: Install mockery
-              run: |
-                  curl -L https://github.com/vektra/mockery/releases/download/v2.15.0/mockery_2.15.0_Linux_x86_64.tar.gz | tar xvz
-                  sudo mv mockery /usr/bin
+      - name: Install mockery
+        run: |
+          curl -L https://github.com/vektra/mockery/releases/download/v2.15.0/mockery_2.15.0_Linux_x86_64.tar.gz | tar xvz
+          sudo mv mockery /usr/bin
 
-            - name: Install the protocol compiler
-              run: |
-                  sudo apt install -y protobuf-compiler
-                  go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
-                  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+      - name: Install the protocol compiler
+        run: |
+          sudo apt install -y protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
-            - name: Install Task
-              uses: arduino/setup-task@v1
+      - name: Install Task
+        uses: arduino/setup-task@v1
 
-            - name: SQLC Generate
-              run: task generate:sqlc
+      - name: SQLC Generate
+        run: task generate:sqlc
 
-            - name: Proto Generate
-              run: task generate:proto
+      - name: Proto Generate
+        run: task generate:proto
 
-            - name: Mock DB
-              run: task db:mock
+      - name: Mock DB
+        run: task db:mock
 
-            - name: Run migrations
-              run: task migrate:up
-              env:
-                  DB_DSN: ${{ secrets.POSTGRES_DSN }}
+      - name: Run migrations
+        run: task migrate:up
+        env:
+          DB_DSN: ${{ secrets.POSTGRES_DSN }}
 
-            - name: Test
-              run: task app:test
-              env:
-                  POSTGRES_USER: postgres
-                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-                  POSTGRES_HOST: 127.0.0.1
-                  APP_SECRET: ${{ secrets.APP_SECRET }}
-                  APP_TOKEN_SYMMETRIC_KEY: ${{ secrets.APP_TOKEN_SYMMETRIC_KEY }}
+      - name: Test
+        run: task app:test
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: 127.0.0.1
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          APP_TOKEN_SYMMETRIC_KEY: ${{ secrets.APP_TOKEN_SYMMETRIC_KEY }}

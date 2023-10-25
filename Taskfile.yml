@@ -1,9 +1,11 @@
-version: "3"
+---
+version: '3'
 
-dotenv: [".env"]
+dotenv:
+  - .env
 
 includes:
-    app: ./tasks/app/App.yml
-    generate: ./tasks/app/Generate.yml
-    db: ./tasks/database/PostgresTasks.yml
-    migrate: ./tasks/database/MigrationsTasks.yml
+  app: ./tasks/app/App.yml
+  generate: ./tasks/app/Generate.yml
+  db: ./tasks/database/PostgresTasks.yml
+  migrate: ./tasks/database/MigrationsTasks.yml
