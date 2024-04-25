@@ -1,4 +1,5 @@
 [sqlfluff]
+dialect = postgres
 exclude_rules = layout.indent, layout.cte_bracket, layout.select_targets
 max_line_length = 88
 
