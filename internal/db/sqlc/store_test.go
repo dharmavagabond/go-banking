@@ -16,7 +16,7 @@ func TestTransferTx(t *testing.T) {
 	resultsch := make(chan TransferTxResult)
 	executedTransactions := 5
 	amountToTransfer := int64(10)
-	existed := make(map[int]bool)
+	existed := make(map[int]bool, 0)
 
 	for i := 0; i < executedTransactions; i++ {
 		go func() {
@@ -55,22 +55,22 @@ func TestTransferTx(t *testing.T) {
 		require.NoError(t, err)
 
 		fromEntry := result.FromEntry
-		fromEntryAccountId, _ := fromEntry.AccountID.Value()
+		fromEntryAccountID, _ := fromEntry.AccountID.Value()
 		require.NotEmpty(t, fromEntry)
 		require.NotZero(t, fromEntry.ID)
 		require.NotZero(t, fromEntry.CreatedAt)
-		require.Equal(t, fromAccount.ID, fromEntryAccountId)
+		require.Equal(t, fromAccount.ID, fromEntryAccountID)
 		require.Equal(t, -amountToTransfer, fromEntry.Amount)
 
 		_, err = store.GetEntry(ctx, fromEntry.ID)
 		require.NoError(t, err)
 
 		toEntry := result.ToEntry
-		toEntryAccountId, _ := toEntry.AccountID.Value()
+		toEntryAccountID, _ := toEntry.AccountID.Value()
 		require.NotEmpty(t, toEntry)
 		require.NotZero(t, toEntry.ID)
 		require.NotZero(t, toEntry.CreatedAt)
-		require.Equal(t, toAccount.ID, toEntryAccountId)
+		require.Equal(t, toAccount.ID, toEntryAccountID)
 		require.Equal(t, amountToTransfer, toEntry.Amount)
 
 		_, err = store.GetEntry(ctx, toEntry.ID)
@@ -102,8 +102,16 @@ func TestTransferTx(t *testing.T) {
 	updatedToAccount, err := testQueries.GetAccount(context.Background(), toAccount.ID)
 	require.NoError(t, err)
 
-	require.Equal(t, fromAccount.Balance-int64(executedTransactions)*amountToTransfer, updatedFromAccount.Balance)
-	require.Equal(t, toAccount.Balance+int64(executedTransactions)*amountToTransfer, updatedToAccount.Balance)
+	require.Equal(
+		t,
+		fromAccount.Balance-int64(executedTransactions)*amountToTransfer,
+		updatedFromAccount.Balance,
+	)
+	require.Equal(
+		t,
+		toAccount.Balance+int64(executedTransactions)*amountToTransfer,
+		updatedToAccount.Balance,
+	)
 }
 
 func TestTransferDeadlockTx(t *testing.T) {

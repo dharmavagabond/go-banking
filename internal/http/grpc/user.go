@@ -7,12 +7,6 @@ import (
 	"time"
 
 	"github.com/alexedwards/argon2id"
-	"github.com/dharmavagabond/simple-bank/internal/config"
-	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/pb"
-	"github.com/dharmavagabond/simple-bank/internal/token"
-	"github.com/dharmavagabond/simple-bank/internal/valid"
-	"github.com/dharmavagabond/simple-bank/internal/worker"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -22,6 +16,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/dharmavagabond/simple-bank/internal/config"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	"github.com/dharmavagabond/simple-bank/internal/pb"
+	"github.com/dharmavagabond/simple-bank/internal/token"
+	"github.com/dharmavagabond/simple-bank/internal/valid"
+	"github.com/dharmavagabond/simple-bank/internal/worker"
 )
 
 var argonParams = &argon2id.Params{
@@ -269,6 +270,8 @@ func (server *Server) UpdateUser(
 func validateCreateUserRequest(
 	req *pb.CreateUserRequest,
 ) (violations []*errdetails.BadRequest_FieldViolation) {
+	violations = make([]*errdetails.BadRequest_FieldViolation, 0, 4)
+
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
@@ -291,6 +294,8 @@ func validateCreateUserRequest(
 func validateLoginUserRequest(
 	req *pb.LoginUserRequest,
 ) (violations []*errdetails.BadRequest_FieldViolation) {
+	violations = make([]*errdetails.BadRequest_FieldViolation, 0, 2)
+
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
@@ -305,6 +310,8 @@ func validateLoginUserRequest(
 func validateUpdateUserRequest(
 	req *pb.UpdateUserRequest,
 ) (violations []*errdetails.BadRequest_FieldViolation) {
+	violations = make([]*errdetails.BadRequest_FieldViolation, 0, 4)
+
 	if err := valid.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}

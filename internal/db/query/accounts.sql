@@ -16,7 +16,7 @@ select id, owner, balance, currency
 from accounts
 where id = $1
 limit 1
-for no key update
+for no key update  -- noqa: PRS
 ;
 
 -- name: ListAccounts :many
@@ -37,7 +37,7 @@ returning *
 
 -- name: AddAccountBalance :one
 update accounts
-set balance = balance + @amount_to_transfer
+set balance = balance + @amount_to_transfer -- noqa: PRS
 where id = @id
 returning *
 ;

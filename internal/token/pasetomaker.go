@@ -12,7 +12,10 @@ type PasetoMaker struct {
 	symmetricKey paseto.V4SymmetricKey
 }
 
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (token string, payload *Payload, err error) {
+func (maker *PasetoMaker) CreateToken(
+	username string,
+	duration time.Duration,
+) (token string, payload *Payload, err error) {
 	if payload, err = NewPayload(username, duration); err != nil {
 		return
 	}
@@ -52,7 +55,7 @@ func (maker *PasetoMaker) VerifyToken(token string) (payload *Payload, err error
 func NewPasetoMaker(symmetricKey string) (maker Maker, err error) {
 	var (
 		pv4sk paseto.V4SymmetricKey
-		token paseto.Token = paseto.NewToken()
+		token = paseto.NewToken()
 	)
 
 	if pv4sk, err = paseto.V4SymmetricKeyFromBytes([]byte(symmetricKey)); err != nil {
