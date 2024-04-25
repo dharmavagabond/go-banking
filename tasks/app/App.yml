@@ -20,8 +20,7 @@ tasks:
       - cmd: go tool cover -html=cover.out
   lint:
     cmds:
-      - cmd: golangci-lint run --config=.golangci.yml --fix --new --issues-exit-code
-          0 ./...
+      - cmd: golangci-lint run --new --issues-exit-code 0
   evans:
     cmds:
       - cmd: evans --host localhost --port {{.APP_GRPC_PORT}} -r repl
