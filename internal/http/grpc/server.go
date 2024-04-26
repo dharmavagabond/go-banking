@@ -4,19 +4,20 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/dharmavagabond/simple-bank/internal/config"
-	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/pb"
-	"github.com/dharmavagabond/simple-bank/internal/token"
-	"github.com/dharmavagabond/simple-bank/internal/worker"
 	"github.com/rs/zerolog/log"
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/dharmavagabond/simple-bank/internal/config"
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	pb "github.com/dharmavagabond/simple-bank/internal/pb/user/v1"
+	"github.com/dharmavagabond/simple-bank/internal/token"
+	"github.com/dharmavagabond/simple-bank/internal/worker"
 )
 
 type (
 	Server struct {
-		pb.UnimplementedSimpleBankServer
+		pb.UnimplementedSimpleBankServiceServer
 		store           db.Store
 		tokenMaker      token.Maker
 		taskDistributor worker.TaskDistributor
@@ -33,7 +34,7 @@ func (server *Server) Start() error {
 	grpcLogger := ggrpc.UnaryInterceptor(gRPCLogger)
 	rpcServer := ggrpc.NewServer(grpcLogger)
 
-	pb.RegisterSimpleBankServer(rpcServer, server)
+	pb.RegisterSimpleBankServiceServer(rpcServer, server)
 	reflection.Register(rpcServer)
 
 	if listener, err = net.Listen("tcp", addr); err != nil {

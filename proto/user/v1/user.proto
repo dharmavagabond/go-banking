@@ -1,11 +1,10 @@
 syntax = "proto3";
 
-package pb;
+package user.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/dharmavagabond/simple-bank/internal/pb";
-
+option go_package = "github.com/dharmavagabond/simple-bank";
 
 message User {
   string username = 1;

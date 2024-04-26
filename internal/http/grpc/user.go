@@ -19,7 +19,7 @@ import (
 
 	"github.com/dharmavagabond/simple-bank/internal/config"
 	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/pb"
+	pb "github.com/dharmavagabond/simple-bank/internal/pb/user/v1"
 	"github.com/dharmavagabond/simple-bank/internal/token"
 	"github.com/dharmavagabond/simple-bank/internal/valid"
 	"github.com/dharmavagabond/simple-bank/internal/worker"

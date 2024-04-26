@@ -7,6 +7,8 @@ vendor
 doc/*
 internal/mocks/*
 internal/pb/*
+bazel-*
+third_party
 
 internal/db/sqlc/db.go
 internal/db/sqlc/models.go

@@ -1,0 +1,18 @@
+---
+version: v1
+
+managed:
+  enabled: true
+
+plugins:
+  - plugin: go
+    out: internal/pb
+    opt: paths=source_relative
+  - plugin: go-grpc
+    out: internal/pb
+    opt: paths=source_relative
+  - plugin: grpc-gateway
+    out: internal/pb
+    opt: paths=source_relative
+  - plugin: openapiv2
+    out: third_party/OpenAPI/openapiv2

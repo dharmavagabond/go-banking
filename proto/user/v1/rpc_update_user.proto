@@ -1,11 +1,10 @@
 syntax = "proto3";
 
-package pb;
+package user.v1;
 
-import "user.proto";
+import "user/v1/user.proto";
 
-option go_package = "github.com/dharmavagabond/simple-bank/internal/pb";
-
+option go_package = "github.com/dharmavagabond/simple-bank";
 
 message UpdateUserRequest {
   string username = 1;

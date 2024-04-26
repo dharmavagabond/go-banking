@@ -1,9 +1,10 @@
 package grpc
 
 import (
-	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
-	"github.com/dharmavagabond/simple-bank/internal/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	db "github.com/dharmavagabond/simple-bank/internal/db/sqlc"
+	pb "github.com/dharmavagabond/simple-bank/internal/pb/user/v1"
 )
 
 func convertUser(user db.User) *pb.User {
