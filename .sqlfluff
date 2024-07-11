@@ -1,6 +1,6 @@
 [sqlfluff]
 dialect = postgres
-exclude_rules = layout.indent, layout.cte_bracket, layout.select_targets
+exclude_rules = layout.indent, layout.cte_bracket, layout.select_targets, layout.end_of_file
 max_line_length = 88
 
 [sqlfluff:rules]
