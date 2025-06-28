@@ -4,7 +4,7 @@
 ####### BASE ######
 ###################
 
-FROM docker.io/golang:1.22-bullseye AS base
+FROM docker.io/golang:1.24-bullseye AS base
 
 WORKDIR /go/src/go-simple-bank
 
